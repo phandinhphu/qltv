@@ -1,0 +1,16 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar" class="admin-panel">
+    <div class="admin-panel-title">Quản trị thư viện</div>
+    <nav class="nav flex-column gap-1">
+        <a class="nav-link" th:href="@{/admin/dashboard}">Dashboard</a>
+        <a class="nav-link" th:href="@{/admin/books}">Sách</a>
+        <a class="nav-link" th:href="@{/admin/categories}">Danh mục</a>
+        <a class="nav-link" th:href="@{/admin/authors}">Tác giả</a>
+        <a class="nav-link" th:href="@{/admin/borrows}">Mượn trả</a>
+        <a class="nav-link" th:href="@{/admin/users}">Người dùng</a>
+    </nav>
+</aside>
+</body>
+</html>

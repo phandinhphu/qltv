@@ -1,0 +1,53 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layout/admin :: page('Thùng rác - Quản lý sách', ~{::content})}">
+<th:block th:fragment="content">
+    <main>
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <h1 class="h3 mb-1">Thùng rác (Sách đã xóa)</h1>
+                <p class="app-muted mb-0">Danh sách sách đã xóa mềm, bạn có thể khôi phục lại.</p>
+            </div>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/books}">Quay lại danh sách</a>
+        </div>
+
+        <div class="card app-card app-table">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tiêu đề</th>
+                            <th>ISBN</th>
+                            <th>Trạng thái</th>
+                            <th>Bản còn</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="book : ${pageData.content}">
+                            <td th:text="${book.title}">Title</td>
+                            <td th:text="${book.isbn}">ISBN</td>
+                            <td th:text="${book.status}">Status</td>
+                            <td th:text="${book.availableCopies}">0</td>
+                            <td class="text-end">
+                                <form class="d-inline" th:action="@{/admin/books/{id}/restore(id=${book.id})}"
+                                    method="post">
+                                    <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                                    <button class="btn btn-sm btn-outline-success">Khôi phục</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${pageData.content.isEmpty()}">
+                            <td colspan="5" class="text-center py-4 text-muted">Thùng rác trống</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div
+            th:replace="~{fragments/shared/pagination :: pagination('/admin/books/trash', ${pageData}, ${queryParams})}">
+        </div>
+    </main>
+</th:block>
+
+</html>

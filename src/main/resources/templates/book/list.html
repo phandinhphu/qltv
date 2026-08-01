@@ -1,0 +1,40 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/client :: page('Danh sách sách', ~{::content})}">
+<th:block th:fragment="content">
+<main class="container page-section">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div class="card app-card filter-card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Bộ lọc</h2>
+                    <form th:action="@{/books}" method="get" class="vstack gap-3">
+                        <input class="form-control" name="title" placeholder="Từ khóa" th:value="${filter.title}">
+                        <select class="form-select" name="categoryId">
+                            <option value="">Tất cả danh mục</option>
+                            <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}" th:selected="${filter.categoryId == category.id}"></option>
+                        </select>
+                        <input class="form-control" name="language" placeholder="Ngôn ngữ" th:value="${filter.language}">
+                        <input class="form-control" name="publishYear" type="number" placeholder="Năm xuất bản" th:value="${filter.publishYear}">
+                        <button class="btn btn-primary">Lọc</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-end mb-3">
+                <div>
+                    <h1 class="h3 mb-1">Sách</h1>
+                    <p class="app-muted mb-0">Kết quả phân trang theo bộ lọc.</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-xl-4" th:each="book : ${pageData.content}">
+                    <div th:replace="~{fragments/shared/book-card :: book-card(${book}, true, @{/books/{id}(id=${book.id})})}"></div>
+                </div>
+            </div>
+            <div th:replace="~{fragments/shared/pagination :: pagination('/books', ${pageData}, ${queryParams})}"></div>
+        </div>
+    </div>
+</main>
+</th:block>
+</html>

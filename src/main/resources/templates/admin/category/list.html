@@ -1,0 +1,31 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: page('Quản lý danh mục', ~{::content})}">
+<th:block th:fragment="content">
+<main>
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <div><h1 class="h3 mb-1">Quản lý danh mục</h1></div>
+        <a class="btn btn-primary" th:href="@{/admin/categories/new}">Thêm danh mục</a>
+    </div>
+    <div class="card app-card app-table">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light"><tr><th>Tên</th><th>Mô tả</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="category : ${categories}">
+                    <td th:text="${category.name}">Name</td>
+                    <td th:text="${category.description}">Description</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/categories/{id}/edit(id=${category.id})}">Sửa</a>
+                        <form class="d-inline" th:action="@{/admin/categories/{id}/delete(id=${category.id})}" method="post">
+                            <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                            <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</th:block>
+</html>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20240601_000009" author="copilot">
+        <insert tableName="users">
+            <column name="id" valueNumeric="1"/>
+            <column name="username" value="admin"/>
+            <column name="email" value="admin@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="ADMIN"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="users">
+            <column name="id" valueNumeric="2"/>
+            <column name="username" value="user"/>
+            <column name="email" value="user@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="categories">
+            <column name="id" valueNumeric="1"/>
+            <column name="name" value="Công nghệ"/>
+            <column name="description" value="Sách công nghệ"/>
+            <column name="slug" value="cong-nghe"/>
+        </insert>
+
+        <insert tableName="authors">
+            <column name="id" valueNumeric="1"/>
+            <column name="name" value="Tác giả mẫu"/>
+            <column name="bio" value="Tiểu sử mẫu"/>
+            <column name="avatar_url" value="https://example.com/avatar.jpg"/>
+        </insert>
+
+        <insert tableName="books">
+            <column name="id" valueNumeric="1"/>
+            <column name="title" value="Sách mẫu"/>
+            <column name="isbn" value="9780000000001"/>
+            <column name="description" value="Mô tả sách mẫu"/>
+            <column name="cover_image_url" value="https://example.com/cover.jpg"/>
+            <column name="file_url" value="https://example.com/book.pdf"/>
+            <column name="publish_year" valueNumeric="2026"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="5"/>
+            <column name="available_copies" valueNumeric="5"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+
+        <insert tableName="book_categories">
+            <column name="book_id" valueNumeric="1"/>
+            <column name="category_id" valueNumeric="1"/>
+        </insert>
+
+        <insert tableName="book_authors">
+            <column name="book_id" valueNumeric="1"/>
+            <column name="author_id" valueNumeric="1"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

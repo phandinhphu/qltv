@@ -1,0 +1,21 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: page('Tác giả', ~{::content})}">
+<th:block th:fragment="content">
+<main>
+    <div class="card app-card">
+        <div class="card-body">
+            <h1 class="h3 mb-4" th:text="${mode == 'edit' ? 'Sửa tác giả' : 'Thêm tác giả'}">Form</h1>
+            <form th:object="${request}"
+                  th:action="${mode == 'edit'} ? @{/admin/authors/{id}(id=${authorId})} : @{/admin/authors}"
+                  method="post" enctype="multipart/form-data" class="row g-3">
+                <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                <div class="col-12"><input class="form-control" th:field="*{name}" placeholder="Tên tác giả"></div>
+                <div class="col-12"><textarea class="form-control" th:field="*{bio}" rows="4" placeholder="Tiểu sử"></textarea></div>
+                <div class="col-12"><input class="form-control" type="file" name="avatar"></div>
+                <div class="col-12 d-flex gap-2"><button class="btn btn-primary" type="submit">Lưu</button><a class="btn btn-outline-secondary" th:href="@{/admin/authors}">Hủy</a></div>
+            </form>
+        </div>
+    </div>
+</main>
+</th:block>
+</html>

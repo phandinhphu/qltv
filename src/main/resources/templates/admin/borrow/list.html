@@ -1,0 +1,30 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: page('Lịch sử mượn', ~{::content})}">
+<th:block th:fragment="content">
+<main>
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <div>
+            <h1 class="h3 mb-1">Lịch sử mượn</h1>
+            <p class="app-muted mb-0">Theo dõi tất cả phiếu mượn trả.</p>
+        </div>
+    </div>
+    <div class="card app-card app-table">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light"><tr><th>User</th><th>Sách</th><th>Mượn</th><th>Hạn trả</th><th>Trạng thái</th></tr></thead>
+                <tbody>
+                <tr th:each="borrow : ${pageData.content}">
+                    <td th:text="${borrow.username}">User</td>
+                    <td th:text="${borrow.bookTitle}">Book</td>
+                    <td th:text="${borrow.borrowDate}">Borrow</td>
+                    <td th:text="${borrow.dueDate}">Due</td>
+                    <td th:text="${borrow.status}">Status</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div th:replace="~{fragments/shared/pagination :: pagination('/admin/borrows', ${pageData}, ${queryParams})}"></div>
+</main>
+</th:block>
+</html>

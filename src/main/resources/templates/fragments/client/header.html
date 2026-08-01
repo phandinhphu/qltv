@@ -1,0 +1,46 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<body>
+    <nav th:fragment="header" class="navbar navbar-expand-lg navbar-dark app-navbar sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
+                <span class="brand-mark">QTLV</span>
+                <span class="brand-text">Thư viện số</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/books}">Sách</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/borrows/my}">Mượn của tôi</a></li>
+                </ul>
+                <div class="d-flex gap-2" sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-outline-light btn-sm" th:href="@{/login}">Đăng nhập</a>
+                    <a class="btn btn-light btn-sm" th:href="@{/register}">Đăng ký</a>
+                </div>
+                <div class="dropdown" sec:authorize="isAuthenticated()">
+                    <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <span sec:authentication="name">Tài khoản</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" th:href="@{/profile}">Profile</a></li>
+                        <li class="dropdown-item" sec:authorize="hasRole('ROLE_ADMIN')"><a class="nav-link"
+                                th:href="@{/admin/dashboard}">Admin</a></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="px-3 py-1">
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}"
+                                    th:value="${_csrf.token}">
+                                <button class="btn btn-link p-0 text-decoration-none" type="submit">Đăng xuất</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+</body>
+
+</html>

@@ -1,0 +1,20 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: page('Danh mục', ~{::content})}">
+<th:block th:fragment="content">
+<main>
+    <div class="card app-card">
+        <div class="card-body">
+            <h1 class="h3 mb-4" th:text="${mode == 'edit' ? 'Sửa danh mục' : 'Thêm danh mục'}">Form</h1>
+            <form th:object="${request}"
+                  th:action="${mode == 'edit'} ? @{/admin/categories/{id}(id=${categoryId})} : @{/admin/categories}"
+                  method="post" class="row g-3">
+                <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                <div class="col-12"><input class="form-control" th:field="*{name}" placeholder="Tên"></div>
+                <div class="col-12"><textarea class="form-control" th:field="*{description}" rows="4" placeholder="Mô tả"></textarea></div>
+                <div class="col-12 d-flex gap-2"><button class="btn btn-primary" type="submit">Lưu</button><a class="btn btn-outline-secondary" th:href="@{/admin/categories}">Hủy</a></div>
+            </form>
+        </div>
+    </div>
+</main>
+</th:block>
+</html>

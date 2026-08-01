@@ -1,0 +1,14 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/client :: page('Lỗi hệ thống', ~{::content})}">
+<th:block th:fragment="content">
+<main class="container page-section text-center">
+    <div class="card app-card error-card mx-auto" style="max-width: 720px;">
+        <div class="card-body p-5">
+            <h1 class="display-5 fw-bold" th:text="${errorCode}">500</h1>
+            <p class="lead" th:text="${errorMessage}">Server error</p>
+            <a class="btn btn-primary" th:href="@{/}">Về trang chủ</a>
+        </div>
+    </div>
+</main>
+</th:block>
+</html>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="db/changelog/20240601_000001_create_table_users.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20240601_000002_create_table_categories.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20240601_000003_create_table_authors.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20240601_000004_create_table_books.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20240601_000005_create_table_book_categories.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20240601_000006_create_table_book_authors.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20240601_000007_create_table_borrow_records.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20240601_000008_create_table_reviews.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20240601_000009_insert_data_sample.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20260524_000001_insert_more_seed_data.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20260531_000001_create_table_refresh_tokens.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20260730_000001_add_deleted_column_to_books.xml" relativeToChangelogFile="false"/>
+
+</databaseChangeLog>

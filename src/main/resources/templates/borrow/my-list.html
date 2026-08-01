@@ -1,0 +1,50 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/client :: page('Mượn của tôi', ~{::content})}">
+<th:block th:fragment="content">
+<main class="container page-section">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <div>
+            <h1 class="h3 mb-1">Lịch sử mượn của tôi</h1>
+            <p class="app-muted mb-0">Danh sách sách đang mượn và đã trả.</p>
+        </div>
+    </div>
+
+    <div class="card app-card app-table">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>Sách</th>
+                    <th>Ngày mượn</th>
+                    <th>Hạn trả</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="borrow : ${pageData.content}">
+                    <td th:text="${borrow.bookTitle}">Book</td>
+                    <td th:text="${borrow.borrowDate}">Date</td>
+                    <td th:text="${borrow.dueDate}">Date</td>
+                    <td th:text="${borrow.status}">Status</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-success me-2 mb-2"
+                           th:if="${borrow.hasValidToken and borrow.hasFile}"
+                           th:href="@{/books/{id}(id=${borrow.bookId})}">
+                            Chi tiết
+                        </a>
+                        <form th:if="${borrow.status.name() == 'BORROWING' or borrow.status.name() == 'OVERDUE'}"
+                              th:action="@{/borrows/{id}/return(id=${borrow.id})}" method="post">
+                            <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                            <button class="btn btn-sm btn-outline-primary">Trả sách</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div th:replace="~{fragments/shared/pagination :: pagination('/borrows/my', ${pageData}, ${queryParams})}"></div>
+</main>
+</th:block>
+</html>

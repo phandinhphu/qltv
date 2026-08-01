@@ -1,0 +1,45 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: page('Quản lý sách', ~{::content})}">
+<th:block th:fragment="content">
+<main>
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <div>
+            <h1 class="h3 mb-1">Quản lý sách</h1>
+            <p class="app-muted mb-0">Danh sách sách, lọc và thao tác nhanh.</p>
+        </div>
+        <div>
+            <a class="btn btn-outline-danger me-2" th:href="@{/admin/books/trash}">Thùng rác</a>
+            <a class="btn btn-primary" th:href="@{/admin/books/new}">Thêm sách</a>
+        </div>
+    </div>
+
+    <div class="card app-card app-table">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>Tiêu đề</th><th>ISBN</th><th>Trạng thái</th><th>Bản còn</th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="book : ${pageData.content}">
+                    <td th:text="${book.title}">Title</td>
+                    <td th:text="${book.isbn}">ISBN</td>
+                    <td th:text="${book.status}">Status</td>
+                    <td th:text="${book.availableCopies}">0</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/books/{id}/edit(id=${book.id})}">Sửa</a>
+                        <form class="d-inline" th:action="@{/admin/books/{id}/delete(id=${book.id})}" method="post">
+                            <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                            <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div th:replace="~{fragments/shared/pagination :: pagination('/admin/books', ${pageData}, ${queryParams})}"></div>
+</main>
+</th:block>
+</html>

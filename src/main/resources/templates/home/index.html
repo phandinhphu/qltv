@@ -1,0 +1,63 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/client :: page('Trang chủ', ~{::content})}">
+<th:block th:fragment="content">
+    <main class="container page-section">
+        <section class="app-hero p-5 mb-5 shadow-lg">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8">
+                    <p class="library-kicker mb-2">Thư viện số</p>
+                    <h1 class="display-5 fw-bold mb-3">Khám phá kho sách, mượn nhanh, trả gọn trong không gian thư viện
+                        hiện đại.</h1>
+                    <p class="lead mb-4">Tuyển tập mới cập nhật, danh mục nổi bật, và hành trình mượn đọc thuận tiện.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-light btn-lg" th:href="@{/books}">Xem sách</a>
+                        <a class="btn btn-outline-light btn-lg" th:href="@{/register}"
+                            sec:authorize="isAnonymous()">Đăng ký tài khoản</a>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="library-stat p-4">
+                        <div class="d-flex justify-content-between"><span>Sách mới</span><strong
+                                th:text="${books.size()}">0</strong></div>
+                        <div class="d-flex justify-content-between mt-2"><span>Danh mục nổi bật</span><strong
+                                th:text="${categories.size()}">0</strong></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-end mb-3">
+                <div>
+                    <h2 class="h4 mb-1">Sách mới nhất</h2>
+                    <p class="app-muted mb-0">Top 8 sách được cập nhật gần đây.</p>
+                </div>
+                <a class="btn btn-outline-primary" th:href="@{/books}">Xem tất cả</a>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3" th:each="book : ${books}">
+                    <div
+                        th:replace="~{fragments/shared/book-card :: book-card(${book}, false, @{/books/{id}(id=${book.id})})}">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="h4 mb-3">Danh mục nổi bật</h2>
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-4" th:each="category : ${categories}">
+                    <div class="card app-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-1" th:text="${category.name}">Category</h5>
+                            <p class="card-text app-muted mb-0" th:text="${category.description}">Description</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</th:block>
+
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: page('Sách', ~{::content})}">
+<th:block th:fragment="content">
+<main>
+    <div class="card app-card">
+        <div class="card-body">
+            <h1 class="h3 mb-4" th:text="${mode == 'edit' ? 'Sửa sách' : 'Thêm sách'}">Form</h1>
+            <form th:object="${request}"
+                  th:action="${mode == 'edit'} ? @{/admin/books/{id}(id=${bookId})} : @{/admin/books}"
+                  method="post" enctype="multipart/form-data" class="row g-3">
+                <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                <div class="col-md-6">
+                    <label class="form-label" for="title">Tiêu đề</label>
+                    <input class="form-control" th:field="*{title}" id="title" placeholder="Tiêu đề">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="isbn">ISBN</label>
+                    <input class="form-control" th:field="*{isbn}" id="isbn" placeholder="ISBN">
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="description">Mô tả</label>
+                    <textarea class="form-control" th:field="*{description}" id="description" rows="4" placeholder="Mô tả"></textarea>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="publishYear">Năm xuất bản</label>
+                    <input class="form-control" th:field="*{publishYear}" id="publishYear" type="number" placeholder="Năm xuất bản">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="language">Ngôn ngữ</label>
+                    <input class="form-control" th:field="*{language}" id="language" placeholder="Ngôn ngữ">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="totalCopies">Tổng bản</label>
+                    <input class="form-control" th:field="*{totalCopies}" id="totalCopies" type="number" placeholder="Tổng bản">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="status">Trạng thái</label>
+                    <select class="form-select" th:field="*{status}" id="status">
+                        <option th:each="status : ${statuses}" th:value="${status}" th:text="${status}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="cover">Ảnh bìa</label>
+                    <input class="form-control" type="file" name="cover" id="cover">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="file">File sách (PDF)</label>
+                    <input class="form-control" type="file" name="file" id="file">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Danh mục</label>
+                    <select class="form-select" name="categoryIds" multiple size="5">
+                        <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"
+                                th:selected="${request.categoryIds != null and request.categoryIds.contains(category.id)}"></option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Tác giả</label>
+                    <select class="form-select" name="authorIds" multiple size="5">
+                        <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.name}"
+                                th:selected="${request.authorIds != null and request.authorIds.contains(author.id)}"></option>
+                    </select>
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-primary" type="submit">Lưu</button>
+                    <a class="btn btn-outline-secondary" th:href="@{/admin/books}">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+</th:block>
+</html>

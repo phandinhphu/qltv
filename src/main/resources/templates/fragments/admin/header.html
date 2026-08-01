@@ -1,0 +1,39 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<body>
+    <header th:fragment="header" class="admin-topbar">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <a class="admin-brand d-flex align-items-center gap-2" th:href="@{/admin/dashboard}">
+                    <span class="brand-mark">QTLV</span>
+                    <span class="brand-text">Admin</span>
+                </a>
+                <span class="admin-tag">Library Control</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a class="btn btn-outline-light btn-sm" th:href="@{/}">Về client</a>
+                <div class="dropdown" sec:authorize="isAuthenticated()">
+                    <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <span sec:authentication="name">Tài khoản</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" th:href="@{/profile}">Profile</a></li>
+                        <li class="dropdown-item" sec:authorize="hasRole('ROLE_ADMIN')"><a class="nav-link"
+                                th:href="@{/admin/dashboard}">Admin</a></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="px-3 py-1">
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}"
+                                    th:value="${_csrf.token}">
+                                <button class="btn btn-link p-0 text-decoration-none" type="submit">Đăng xuất</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+</body>
+
+</html>

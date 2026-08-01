@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260524_000001" author="copilot">
+        <!-- Users (auto increment) -->
+        <insert tableName="users">
+            <column name="username" value="seed_user01"/>
+            <column name="email" value="seed_user01@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="seed_user02"/>
+            <column name="email" value="seed_user02@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="seed_user03"/>
+            <column name="email" value="seed_user03@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="seed_user04"/>
+            <column name="email" value="seed_user04@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="seed_user05"/>
+            <column name="email" value="seed_user05@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="seed_user06"/>
+            <column name="email" value="seed_user06@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="seed_user07"/>
+            <column name="email" value="seed_user07@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="seed_user08"/>
+            <column name="email" value="seed_user08@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="seed_user09"/>
+            <column name="email" value="seed_user09@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="users">
+            <column name="username" value="seed_user10"/>
+            <column name="email" value="seed_user10@qltv.local"/>
+            <column name="password" value="$2a$10$7Q5k7rjJQ2x4T5Uq1y1O7eQk6p1d7uK8pM1V4xYjQ5H5n9Q1nqf0u6"/>
+            <column name="role" value="USER"/>
+            <column name="is_active" valueBoolean="true"/>
+        </insert>
+
+        <!-- Categories (auto increment) -->
+        <insert tableName="categories">
+            <column name="name" value="Seed Van hoc"/>
+            <column name="description" value="Sach van hoc"/>
+            <column name="slug" value="seed-van-hoc"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name" value="Seed Kinh te"/>
+            <column name="description" value="Sach kinh te"/>
+            <column name="slug" value="seed-kinh-te"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name" value="Seed Tam ly"/>
+            <column name="description" value="Sach tam ly"/>
+            <column name="slug" value="seed-tam-ly"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name" value="Seed Ky nang"/>
+            <column name="description" value="Sach ky nang"/>
+            <column name="slug" value="seed-ky-nang"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name" value="Seed Lich su"/>
+            <column name="description" value="Sach lich su"/>
+            <column name="slug" value="seed-lich-su"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name" value="Seed Thieu nhi"/>
+            <column name="description" value="Sach thieu nhi"/>
+            <column name="slug" value="seed-thieu-nhi"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name" value="Seed Ngoai ngu"/>
+            <column name="description" value="Sach ngoai ngu"/>
+            <column name="slug" value="seed-ngoai-ngu"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name" value="Seed Khoa hoc"/>
+            <column name="description" value="Sach khoa hoc"/>
+            <column name="slug" value="seed-khoa-hoc"/>
+        </insert>
+        <insert tableName="categories">
+            <column name="name" value="Seed Triet hoc"/>
+            <column name="description" value="Sach triet hoc"/>
+            <column name="slug" value="seed-triet-hoc"/>
+        </insert>
+
+        <!-- Authors (auto increment) -->
+        <insert tableName="authors">
+            <column name="name" value="Nguyễn Nhật Ánh"/>
+            <column name="bio" value="Nhà văn Việt Nam"/>
+            <column name="avatar_url" value="https://example.com/author-02.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Haruki Murakami"/>
+            <column name="bio" value="Tiểu thuyết gia Nhật Bản"/>
+            <column name="avatar_url" value="https://example.com/author-03.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Yuval Noah Harari"/>
+            <column name="bio" value="Sử gia và nhà văn"/>
+            <column name="avatar_url" value="https://example.com/author-04.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Dale Carnegie"/>
+            <column name="bio" value="Diễn giả và tác giả"/>
+            <column name="avatar_url" value="https://example.com/author-05.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Malcolm Gladwell"/>
+            <column name="bio" value="Nhà báo và tác giả"/>
+            <column name="avatar_url" value="https://example.com/author-06.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Stephen Hawking"/>
+            <column name="bio" value="Nhà vật lý lý thuyết"/>
+            <column name="avatar_url" value="https://example.com/author-07.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="J.K. Rowling"/>
+            <column name="bio" value="Tác giả loạt truyện Harry Potter"/>
+            <column name="avatar_url" value="https://example.com/author-08.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Paulo Coelho"/>
+            <column name="bio" value="Tiểu thuyết gia Brazil"/>
+            <column name="avatar_url" value="https://example.com/author-09.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="George Orwell"/>
+            <column name="bio" value="Tiểu thuyết gia Anh"/>
+            <column name="avatar_url" value="https://example.com/author-10.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Sun Tzu"/>
+            <column name="bio" value="Chiến lược gia cổ đại"/>
+            <column name="avatar_url" value="https://example.com/author-11.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Peter Drucker"/>
+            <column name="bio" value="Cha đẻ quản trị hiện đại"/>
+            <column name="avatar_url" value="https://example.com/author-12.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Victor Hugo"/>
+            <column name="bio" value="Tiểu thuyết gia Pháp"/>
+            <column name="avatar_url" value="https://example.com/author-13.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Robert Kiyosaki"/>
+            <column name="bio" value="Tác giả và doanh nhân"/>
+            <column name="avatar_url" value="https://example.com/author-14.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Gustave Le Bon"/>
+            <column name="bio" value="Nhà tâm lý học xã hội"/>
+            <column name="avatar_url" value="https://example.com/author-15.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Napoleon Hill"/>
+            <column name="bio" value="Tác giả sách kinh doanh"/>
+            <column name="avatar_url" value="https://example.com/author-16.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Charles Duhigg"/>
+            <column name="bio" value="Nhà báo và tác giả"/>
+            <column name="avatar_url" value="https://example.com/author-17.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Robert C. Martin"/>
+            <column name="bio" value="Tác giả sách phần mềm"/>
+            <column name="avatar_url" value="https://example.com/author-18.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Andrew Hunt"/>
+            <column name="bio" value="Đồng tác giả Pragmatic Programmer"/>
+            <column name="avatar_url" value="https://example.com/author-19.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Joshua Bloch"/>
+            <column name="bio" value="Tác giả Effective Java"/>
+            <column name="avatar_url" value="https://example.com/author-20.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Erich Gamma"/>
+            <column name="bio" value="Tác giả Design Patterns"/>
+            <column name="avatar_url" value="https://example.com/author-21.jpg"/>
+        </insert>
+        <insert tableName="authors">
+            <column name="name" value="Craig Walls"/>
+            <column name="bio" value="Tác giả Spring Boot"/>
+            <column name="avatar_url" value="https://example.com/author-22.jpg"/>
+        </insert>
+
+        <!-- Books (auto increment) -->
+        <insert tableName="books">
+            <column name="title" value="Đắc Nhân Tâm"/>
+            <column name="isbn" value="9781000000002"/>
+            <column name="description" value="Kỹ năng giao tiếp và ứng xử"/>
+            <column name="cover_image_url" value="https://example.com/cover-02.jpg"/>
+            <column name="file_url" value="https://example.com/book-02.pdf"/>
+            <column name="publish_year" valueNumeric="2016"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="8"/>
+            <column name="available_copies" valueNumeric="8"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Nhà Giả Kim"/>
+            <column name="isbn" value="9781000000003"/>
+            <column name="description" value="Hành trình đi tìm kho báu"/>
+            <column name="cover_image_url" value="https://example.com/cover-03.jpg"/>
+            <column name="file_url" value="https://example.com/book-03.pdf"/>
+            <column name="publish_year" valueNumeric="2015"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="6"/>
+            <column name="available_copies" valueNumeric="6"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Harry Potter và Hòn Đá Phù Thủy"/>
+            <column name="isbn" value="9781000000004"/>
+            <column name="description" value="Tập 1 của loạt Harry Potter"/>
+            <column name="cover_image_url" value="https://example.com/cover-04.jpg"/>
+            <column name="file_url" value="https://example.com/book-04.pdf"/>
+            <column name="publish_year" valueNumeric="2001"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="10"/>
+            <column name="available_copies" valueNumeric="7"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Sapiens: Lược Sử Loài Người"/>
+            <column name="isbn" value="9781000000005"/>
+            <column name="description" value="Lịch sử loài người"/>
+            <column name="cover_image_url" value="https://example.com/cover-05.jpg"/>
+            <column name="file_url" value="https://example.com/book-05.pdf"/>
+            <column name="publish_year" valueNumeric="2017"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="5"/>
+            <column name="available_copies" valueNumeric="5"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="1984"/>
+            <column name="isbn" value="9781000000006"/>
+            <column name="description" value="Tiểu thuyết phản địa đàng"/>
+            <column name="cover_image_url" value="https://example.com/cover-06.jpg"/>
+            <column name="file_url" value="https://example.com/book-06.pdf"/>
+            <column name="publish_year" valueNumeric="1949"/>
+            <column name="language" value="Tiếng Anh"/>
+            <column name="total_copies" valueNumeric="4"/>
+            <column name="available_copies" valueNumeric="2"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Rừng Na Uy"/>
+            <column name="isbn" value="9781000000007"/>
+            <column name="description" value="Tiểu thuyết hiện đại"/>
+            <column name="cover_image_url" value="https://example.com/cover-07.jpg"/>
+            <column name="file_url" value="https://example.com/book-07.pdf"/>
+            <column name="publish_year" valueNumeric="1987"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="3"/>
+            <column name="available_copies" valueNumeric="1"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Tôi Thấy Hoa Vàng Trên Cỏ Xanh"/>
+            <column name="isbn" value="9781000000008"/>
+            <column name="description" value="Tuổi thơ và ký ức"/>
+            <column name="cover_image_url" value="https://example.com/cover-08.jpg"/>
+            <column name="file_url" value="https://example.com/book-08.pdf"/>
+            <column name="publish_year" valueNumeric="2010"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="7"/>
+            <column name="available_copies" valueNumeric="7"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Lược Sử Thời Gian"/>
+            <column name="isbn" value="9781000000009"/>
+            <column name="description" value="Vũ trụ và vật lý hiện đại"/>
+            <column name="cover_image_url" value="https://example.com/cover-09.jpg"/>
+            <column name="file_url" value="https://example.com/book-09.pdf"/>
+            <column name="publish_year" valueNumeric="1988"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="5"/>
+            <column name="available_copies" valueNumeric="0"/>
+            <column name="status" value="OUT_OF_STOCK"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Binh Pháp Tôn Tử"/>
+            <column name="isbn" value="9781000000010"/>
+            <column name="description" value="Binh pháp cổ điển"/>
+            <column name="cover_image_url" value="https://example.com/cover-10.jpg"/>
+            <column name="file_url" value="https://example.com/book-10.pdf"/>
+            <column name="publish_year" valueNumeric="2005"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="9"/>
+            <column name="available_copies" valueNumeric="9"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Quẳng Gánh Lo Đi Và Vui Sống"/>
+            <column name="isbn" value="9781000000011"/>
+            <column name="description" value="Quản lý căng thẳng"/>
+            <column name="cover_image_url" value="https://example.com/cover-11.jpg"/>
+            <column name="file_url" value="https://example.com/book-11.pdf"/>
+            <column name="publish_year" valueNumeric="2012"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="6"/>
+            <column name="available_copies" valueNumeric="6"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Những Người Khốn Khổ"/>
+            <column name="isbn" value="9781000000012"/>
+            <column name="description" value="Tác phẩm kinh điển"/>
+            <column name="cover_image_url" value="https://example.com/cover-12.jpg"/>
+            <column name="file_url" value="https://example.com/book-12.pdf"/>
+            <column name="publish_year" valueNumeric="1862"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="2"/>
+            <column name="available_copies" valueNumeric="0"/>
+            <column name="status" value="OUT_OF_STOCK"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Dạy Con Làm Giàu"/>
+            <column name="isbn" value="9781000000013"/>
+            <column name="description" value="Tư duy tài chính cá nhân"/>
+            <column name="cover_image_url" value="https://example.com/cover-13.jpg"/>
+            <column name="file_url" value="https://example.com/book-13.pdf"/>
+            <column name="publish_year" valueNumeric="2019"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="8"/>
+            <column name="available_copies" valueNumeric="4"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Tâm Lý Học Đám Đông"/>
+            <column name="isbn" value="9781000000014"/>
+            <column name="description" value="Tâm lý học xã hội"/>
+            <column name="cover_image_url" value="https://example.com/cover-14.jpg"/>
+            <column name="file_url" value="https://example.com/book-14.pdf"/>
+            <column name="publish_year" valueNumeric="1895"/>
+            <column name="language" value="Tiếng Việt"/>
+            <column name="total_copies" valueNumeric="5"/>
+            <column name="available_copies" valueNumeric="5"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Think and Grow Rich"/>
+            <column name="isbn" value="9781000000015"/>
+            <column name="description" value="Classic business book"/>
+            <column name="cover_image_url" value="https://example.com/cover-15.jpg"/>
+            <column name="file_url" value="https://example.com/book-15.pdf"/>
+            <column name="publish_year" valueNumeric="1937"/>
+            <column name="language" value="English"/>
+            <column name="total_copies" valueNumeric="3"/>
+            <column name="available_copies" valueNumeric="3"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="The Power of Habit"/>
+            <column name="isbn" value="9781000000016"/>
+            <column name="description" value="Thói quen và thay đổi"/>
+            <column name="cover_image_url" value="https://example.com/cover-16.jpg"/>
+            <column name="file_url" value="https://example.com/book-16.pdf"/>
+            <column name="publish_year" valueNumeric="2012"/>
+            <column name="language" value="English"/>
+            <column name="total_copies" valueNumeric="4"/>
+            <column name="available_copies" valueNumeric="1"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Clean Code"/>
+            <column name="isbn" value="9781000000017"/>
+            <column name="description" value="Kỹ thuật viết mã sạch"/>
+            <column name="cover_image_url" value="https://example.com/cover-17.jpg"/>
+            <column name="file_url" value="https://example.com/book-17.pdf"/>
+            <column name="publish_year" valueNumeric="2008"/>
+            <column name="language" value="English"/>
+            <column name="total_copies" valueNumeric="6"/>
+            <column name="available_copies" valueNumeric="6"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="The Pragmatic Programmer"/>
+            <column name="isbn" value="9781000000018"/>
+            <column name="description" value="Kỹ năng lập trình thực dụng"/>
+            <column name="cover_image_url" value="https://example.com/cover-18.jpg"/>
+            <column name="file_url" value="https://example.com/book-18.pdf"/>
+            <column name="publish_year" valueNumeric="1999"/>
+            <column name="language" value="English"/>
+            <column name="total_copies" valueNumeric="4"/>
+            <column name="available_copies" valueNumeric="4"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Effective Java"/>
+            <column name="isbn" value="9781000000019"/>
+            <column name="description" value="Best practices Java"/>
+            <column name="cover_image_url" value="https://example.com/cover-19.jpg"/>
+            <column name="file_url" value="https://example.com/book-19.pdf"/>
+            <column name="publish_year" valueNumeric="2018"/>
+            <column name="language" value="English"/>
+            <column name="total_copies" valueNumeric="3"/>
+            <column name="available_copies" valueNumeric="0"/>
+            <column name="status" value="OUT_OF_STOCK"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Design Patterns"/>
+            <column name="isbn" value="9781000000020"/>
+            <column name="description" value="Các mẫu thiết kế kinh điển"/>
+            <column name="cover_image_url" value="https://example.com/cover-20.jpg"/>
+            <column name="file_url" value="https://example.com/book-20.pdf"/>
+            <column name="publish_year" valueNumeric="1994"/>
+            <column name="language" value="English"/>
+            <column name="total_copies" valueNumeric="2"/>
+            <column name="available_copies" valueNumeric="0"/>
+            <column name="status" value="OUT_OF_STOCK"/>
+        </insert>
+        <insert tableName="books">
+            <column name="title" value="Spring Boot in Action"/>
+            <column name="isbn" value="9781000000021"/>
+            <column name="description" value="Hướng dẫn Spring Boot"/>
+            <column name="cover_image_url" value="https://example.com/cover-21.jpg"/>
+            <column name="file_url" value="https://example.com/book-21.pdf"/>
+            <column name="publish_year" valueNumeric="2021"/>
+            <column name="language" value="English"/>
+            <column name="total_copies" valueNumeric="5"/>
+            <column name="available_copies" valueNumeric="5"/>
+            <column name="status" value="AVAILABLE"/>
+        </insert>
+
+        <!-- Book - Categories (resolve by isbn + slug) -->
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000002' AND c.slug = 'seed-ky-nang'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000002' AND c.slug = 'seed-tam-ly'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000003' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000004' AND c.slug = 'seed-thieu-nhi'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000004' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000005' AND c.slug = 'seed-lich-su'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000005' AND c.slug = 'seed-khoa-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000006' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000006' AND c.slug = 'seed-triet-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000007' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000008' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000008' AND c.slug = 'seed-thieu-nhi'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000009' AND c.slug = 'seed-khoa-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000010' AND c.slug = 'seed-triet-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000010' AND c.slug = 'seed-kinh-te'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000011' AND c.slug = 'seed-ky-nang'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000011' AND c.slug = 'seed-tam-ly'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000012' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000013' AND c.slug = 'seed-kinh-te'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000013' AND c.slug = 'seed-ky-nang'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000014' AND c.slug = 'seed-tam-ly'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000015' AND c.slug = 'seed-kinh-te'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000015' AND c.slug = 'seed-ky-nang'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000015' AND c.slug = 'seed-ngoai-ngu'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000016' AND c.slug = 'seed-ky-nang'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000016' AND c.slug = 'seed-tam-ly'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000017' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000018' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000019' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000020' AND c.slug = 'seed-van-hoc'</sql>
+        <sql>INSERT INTO book_categories (book_id, category_id) SELECT b.id, c.id FROM books b, categories c WHERE b.isbn = '9781000000021' AND c.slug = 'seed-van-hoc'</sql>
+
+        <!-- Book - Authors (resolve by isbn + author name) -->
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000002' AND a.name = 'Dale Carnegie'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000003' AND a.name = 'Paulo Coelho'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000004' AND a.name = 'J.K. Rowling'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000005' AND a.name = 'Yuval Noah Harari'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000006' AND a.name = 'George Orwell'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000007' AND a.name = 'Haruki Murakami'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000008' AND a.name = 'Nguyễn Nhật Ánh'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000009' AND a.name = 'Stephen Hawking'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000010' AND a.name = 'Sun Tzu'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000011' AND a.name = 'Dale Carnegie'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000012' AND a.name = 'Victor Hugo'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000013' AND a.name = 'Robert Kiyosaki'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000014' AND a.name = 'Gustave Le Bon'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000015' AND a.name = 'Napoleon Hill'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000016' AND a.name = 'Charles Duhigg'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000017' AND a.name = 'Robert C. Martin'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000018' AND a.name = 'Andrew Hunt'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000019' AND a.name = 'Joshua Bloch'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000020' AND a.name = 'Erich Gamma'</sql>
+        <sql>INSERT INTO book_authors (book_id, author_id) SELECT b.id, a.id FROM books b, authors a WHERE b.isbn = '9781000000021' AND a.name = 'Craig Walls'</sql>
+
+        <!-- Borrow Records (resolve by username + isbn) -->
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-05-10 09:00:00', '2026-05-24 09:00:00', NULL, 'BORROWING', 'seed_dl_20260510_0001', '2026-05-11 09:00:00', u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user01' AND b.isbn = '9781000000004'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-04-10 10:00:00', '2026-04-24 10:00:00', '2026-04-15 14:00:00', 'RETURNED', NULL, NULL, u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user02' AND b.isbn = '9781000000002'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-04-20 09:30:00', '2026-05-04 09:30:00', NULL, 'OVERDUE', 'seed_dl_20260420_0003', '2026-04-21 09:30:00', u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user03' AND b.isbn = '9781000000009'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-05-12 08:00:00', '2026-05-26 08:00:00', NULL, 'BORROWING', 'seed_dl_20260512_0004', '2026-05-13 08:00:00', u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user04' AND b.isbn = '9781000000006'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-03-15 09:00:00', '2026-03-29 09:00:00', '2026-03-20 10:00:00', 'RETURNED', NULL, NULL, u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user05' AND b.isbn = '9781000000007'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-05-01 13:00:00', '2026-05-15 13:00:00', NULL, 'BORROWING', NULL, NULL, u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user06' AND b.isbn = '9781000000005'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-02-10 08:15:00', '2026-02-24 08:15:00', '2026-02-18 08:45:00', 'RETURNED', NULL, NULL, u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user07' AND b.isbn = '9781000000010'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-05-05 14:00:00', '2026-05-19 14:00:00', NULL, 'BORROWING', NULL, NULL, u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user08' AND b.isbn = '9781000000011'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-04-01 09:00:00', '2026-04-15 09:00:00', NULL, 'OVERDUE', NULL, NULL, u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user09' AND b.isbn = '9781000000012'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-01-10 11:00:00', '2026-01-24 11:00:00', '2026-01-20 11:30:00', 'RETURNED', NULL, NULL, u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user10' AND b.isbn = '9781000000013'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-05-08 09:30:00', '2026-05-22 09:30:00', NULL, 'BORROWING', NULL, NULL, u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user02' AND b.isbn = '9781000000017'</sql>
+        <sql>INSERT INTO borrow_records (borrow_date, due_date, return_date, status, download_token, token_expired_at, user_id, book_id)
+            SELECT '2026-03-01 10:00:00', '2026-03-15 10:00:00', '2026-03-10 12:00:00', 'RETURNED', NULL, NULL, u.id, b.id
+            FROM users u, books b WHERE u.username = 'seed_user03' AND b.isbn = '9781000000018'</sql>
+
+        <!-- Reviews (resolve by username + isbn) -->
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 5, 'Rất hay và dễ áp dụng', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user01' AND b.isbn = '9781000000002'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 4, 'Đọc nhẹ nhàng', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user02' AND b.isbn = '9781000000003'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 5, 'Cuốn sách tuổi thơ', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user03' AND b.isbn = '9781000000004'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 5, 'Nhiều kiến thức mới', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user04' AND b.isbn = '9781000000005'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 4, 'Nội dung sâu sắc', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user05' AND b.isbn = '9781000000006'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 3, 'Văn phong hơi khó', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user06' AND b.isbn = '9781000000007'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 5, 'Cảm động', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user07' AND b.isbn = '9781000000008'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 4, 'Khoa học thú vị', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user08' AND b.isbn = '9781000000009'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 5, 'Rất đáng đọc', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user09' AND b.isbn = '9781000000010'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 4, 'Bài học hữu ích', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user10' AND b.isbn = '9781000000011'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 2, 'Nội dung dài', 0, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user01' AND b.isbn = '9781000000012'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 4, 'Đáng để thử', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user02' AND b.isbn = '9781000000013'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 3, 'Khá thú vị', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user03' AND b.isbn = '9781000000014'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 4, 'Đầy cảm hứng', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user04' AND b.isbn = '9781000000015'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 5, 'Thay đổi thói quen', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user05' AND b.isbn = '9781000000016'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 5, 'Rất hữu ích cho lập trình', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user06' AND b.isbn = '9781000000017'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 4, 'Kinh điển', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user07' AND b.isbn = '9781000000018'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 5, 'Chuẩn Java', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user08' AND b.isbn = '9781000000019'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 4, 'Đáng để nghiên cứu', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user09' AND b.isbn = '9781000000020'</sql>
+        <sql>INSERT INTO reviews (rating, comment, is_visible, user_id, book_id)
+            SELECT 5, 'Hướng dẫn rõ ràng', 1, u.id, b.id FROM users u, books b WHERE u.username = 'seed_user10' AND b.isbn = '9781000000021'</sql>
+    </changeSet>
+
+</databaseChangeLog>

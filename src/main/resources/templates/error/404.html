@@ -1,0 +1,14 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/client :: page('Không tìm thấy', ~{::content})}">
+<th:block th:fragment="content">
+<main class="container page-section text-center">
+    <div class="card app-card error-card mx-auto" style="max-width: 720px;">
+        <div class="card-body p-5">
+            <h1 class="display-5 fw-bold" th:text="${errorCode}">404</h1>
+            <p class="lead" th:text="${errorMessage}">Page not found</p>
+            <a class="btn btn-primary" th:href="@{/}">Về trang chủ</a>
+        </div>
+    </div>
+</main>
+</th:block>
+</html>

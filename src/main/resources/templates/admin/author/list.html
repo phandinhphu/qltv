@@ -1,0 +1,35 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: page('Quản lý tác giả', ~{::content})}">
+<th:block th:fragment="content">
+<main>
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <div><h1 class="h3 mb-1">Quản lý tác giả</h1></div>
+        <a class="btn btn-primary" th:href="@{/admin/authors/new}">Thêm tác giả</a>
+    </div>
+    <div class="card app-card app-table">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light"><tr><th>Avatar</th><th>Tên</th><th>Bio</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="author : ${pageData.content}">
+                    <td>
+                        <img class="rounded-circle" th:src="${author.avatarUrl}" alt="Avatar" width="40" height="40">
+                    </td>
+                    <td th:text="${author.name}">Name</td>
+                    <td th:text="${author.bio}">Bio</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/authors/{id}/edit(id=${author.id})}">Sửa</a>
+                        <form class="d-inline" th:action="@{/admin/authors/{id}/delete(id=${author.id})}" method="post">
+                            <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                            <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div th:replace="~{fragments/shared/pagination :: pagination('/admin/authors', ${pageData}, ${queryParams})}"></div>
+</main>
+</th:block>
+</html>
