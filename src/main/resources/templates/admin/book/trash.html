@@ -35,6 +35,12 @@
                                     <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
                                     <button class="btn btn-sm btn-outline-success">Khôi phục</button>
                                 </form>
+                                <form class="d-inline ms-1" th:action="@{/admin/books/{id}/force(id=${book.id})}"
+                                    method="post"
+                                    onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn sách này không? Thao tác này không thể hoàn tác!')">
+                                    <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                                    <button class="btn btn-sm btn-outline-danger">Xóa vĩnh viễn</button>
+                                </form>
                             </td>
                         </tr>
                         <tr th:if="${pageData.content.isEmpty()}">

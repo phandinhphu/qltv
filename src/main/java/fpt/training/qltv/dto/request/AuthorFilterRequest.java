@@ -8,4 +8,5 @@ import lombok.Setter;
 public class AuthorFilterRequest {
 
     private String name;
+    private Boolean deleted;
 }

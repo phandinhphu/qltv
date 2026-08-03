@@ -4,7 +4,10 @@
 <main>
     <div class="d-flex justify-content-between align-items-end mb-3">
         <div><h1 class="h3 mb-1">Quản lý tác giả</h1></div>
-        <a class="btn btn-primary" th:href="@{/admin/authors/new}">Thêm tác giả</a>
+        <div>
+            <a class="btn btn-outline-danger me-2" th:href="@{/admin/authors/trash}">Thùng rác</a>
+            <a class="btn btn-primary" th:href="@{/admin/authors/new}">Thêm tác giả</a>
+        </div>
     </div>
     <div class="card app-card app-table">
         <div class="table-responsive">

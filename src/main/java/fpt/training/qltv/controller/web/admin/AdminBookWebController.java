@@ -143,6 +143,17 @@ public class AdminBookWebController {
         return "redirect:/admin/books/trash";
     }
 
+    @PostMapping("/{id}/force")
+    public String forceDelete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            bookService.forceDelete(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa vĩnh viễn sách thành công");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/books/trash";
+    }
+
     private void populateFormOptions(Model model) {
         model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("authors", authorService.findAll(null, 0, 100).getContent());

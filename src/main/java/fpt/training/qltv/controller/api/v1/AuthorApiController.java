@@ -38,8 +38,7 @@ public class AuthorApiController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         PageResponse<AuthorResponse> pageResponse = PageResponseMapper.from(
-            authorService.findAll(filter, page, size)
-        );
+                authorService.findAll(filter, page, size));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
@@ -63,7 +62,8 @@ public class AuthorApiController {
             @PathVariable Long id,
             @Valid @ModelAttribute UpdateAuthorRequest request,
             @RequestParam(required = false) MultipartFile avatar) {
-        return ResponseEntity.ok(ApiResponse.success(authorService.update(id, request, avatar), "Cập nhật tác giả thành công"));
+        return ResponseEntity
+                .ok(ApiResponse.success(authorService.update(id, request, avatar), "Cập nhật tác giả thành công"));
     }
 
     @DeleteMapping("/{id}")
@@ -71,5 +71,19 @@ public class AuthorApiController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         authorService.delete(id);
         return ResponseEntity.ok(ApiResponse.successWithoutData("Xóa tác giả thành công"));
+    }
+
+    @PostMapping("/{id}/restore")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> restore(@PathVariable Long id) {
+        authorService.restore(id);
+        return ResponseEntity.ok(ApiResponse.successWithoutData("Khôi phục tác giả thành công"));
+    }
+
+    @DeleteMapping("/{id}/force")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> forceDelete(@PathVariable Long id) {
+        authorService.forceDelete(id);
+        return ResponseEntity.ok(ApiResponse.successWithoutData("Xóa vĩnh viễn tác giả thành công"));
     }
 }

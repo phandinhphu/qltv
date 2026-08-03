@@ -82,4 +82,11 @@ public class BookApiController {
         bookService.restore(id);
         return ResponseEntity.ok(ApiResponse.successWithoutData("Khôi phục sách thành công"));
     }
+
+    @DeleteMapping("/{id}/force")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> forceDelete(@PathVariable Long id) {
+        bookService.forceDelete(id);
+        return ResponseEntity.ok(ApiResponse.successWithoutData("Xóa vĩnh viễn sách thành công"));
+    }
 }

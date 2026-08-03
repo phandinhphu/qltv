@@ -1,5 +1,6 @@
 package fpt.training.qltv.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -43,6 +44,6 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user")
     private Set<BorrowRecord> borrowRecords = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Review> reviews = new HashSet<>();
 }

@@ -1,0 +1,55 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layout/admin :: page('Thùng rác - Quản lý tác giả', ~{::content})}">
+<th:block th:fragment="content">
+    <main>
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+                <h1 class="h3 mb-1">Thùng rác (Tác giả đã xóa)</h1>
+                <p class="app-muted mb-0">Danh sách tác giả đã xóa mềm, bạn có thể khôi phục lại.</p>
+            </div>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/authors}">Quay lại danh sách</a>
+        </div>
+
+        <div class="card app-card app-table">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Avatar</th>
+                            <th>Tên</th>
+                            <th>Bio</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="author : ${pageData.content}">
+                            <td>
+                                <img class="rounded-circle" th:src="${author.avatarUrl}" alt="Avatar" width="40" height="40">
+                            </td>
+                            <td th:text="${author.name}">Name</td>
+                            <td th:text="${author.bio}">Bio</td>
+                            <td class="text-end">
+                                <form class="d-inline" th:action="@{/admin/authors/{id}/restore(id=${author.id})}"
+                                    method="post">
+                                    <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                                    <button class="btn btn-sm btn-outline-success">Khôi phục</button>
+                                </form>
+                                <form class="d-inline ms-1" th:action="@{/admin/authors/{id}/force(id=${author.id})}"
+                                    method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn tác giả này không? Thao tác này không thể hoàn tác!')">
+                                    <th:block th:replace="~{fragments/shared/common :: csrf}"></th:block>
+                                    <button class="btn btn-sm btn-outline-danger">Xóa vĩnh viễn</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${pageData.content.isEmpty()}">
+                            <td colspan="4" class="text-center py-4 text-muted">Thùng rác trống</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div th:replace="~{fragments/shared/pagination :: pagination('/admin/authors/trash', ${pageData}, ${queryParams})}"></div>
+    </main>
+</th:block>
+</html>

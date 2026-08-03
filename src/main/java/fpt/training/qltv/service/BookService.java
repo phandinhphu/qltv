@@ -21,4 +21,6 @@ public interface BookService {
     void delete(Long id);
 
     void restore(Long id);
+
+    void forceDelete(Long id);
 }

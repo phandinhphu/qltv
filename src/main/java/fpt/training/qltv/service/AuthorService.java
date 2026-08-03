@@ -18,4 +18,8 @@ public interface AuthorService {
     AuthorResponse update(Long id, UpdateAuthorRequest request, MultipartFile avatar);
 
     void delete(Long id);
+
+    void restore(Long id);
+
+    void forceDelete(Long id);
 }

@@ -22,6 +22,9 @@ public class Author extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
+
     @Column(nullable = false, length = 150)
     private String name;
 

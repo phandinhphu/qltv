@@ -172,7 +172,7 @@ public class BookServiceImpl implements BookService {
 
         book.setUpdatedAt(LocalDateTime.now());
         normalizeAvailabilityAndStatus(book);
-        return toSummaryResponse(bookRepository.save(book));
+        return toSummaryResponse(book);
     }
 
     @Override
@@ -218,11 +218,57 @@ public class BookServiceImpl implements BookService {
             throw new BusinessException("Không thể khôi phục vì ISBN của sách này đã tồn tại trên một cuốn sách khác");
         }
 
+        // Kiểm tra nếu các thể loại của sách bị xóa
+        for (Category cat : book.getCategories()) {
+            if (cat.isDeleted()) {
+                throw new BusinessException("Không thể khôi phục sách vì thể loại '" + cat.getName() + "' đã bị xóa tạm thời.");
+            }
+        }
+        // Kiểm tra nếu các tác giả của sách bị xóa
+        for (Author auth : book.getAuthors()) {
+            if (auth.isDeleted()) {
+                throw new BusinessException("Không thể khôi phục sách vì tác giả '" + auth.getName() + "' đã bị xóa tạm thời.");
+            }
+        }
+
         book.setDeleted(false);
         book.setStatus(BookStatus.AVAILABLE);
         book.setAvailableCopies(book.getTotalCopies());
         book.setUpdatedAt(LocalDateTime.now());
         bookRepository.save(book);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+        @CacheEvict(value = "books", key = "#id"),
+        @CacheEvict(value = "dashboard", allEntries = true)
+    })
+    public void forceDelete(Long id) {
+        Book book = getBookOrThrow(id);
+        if (!book.isDeleted()) {
+            throw new BusinessException("Sách phải được xóa mềm trước khi xóa vĩnh viễn");
+        }
+
+        // Kiểm tra xem sách có lịch sử mượn trả không
+        if (borrowRecordRepository.existsByBookId(id)) {
+            throw new BusinessException("Không thể xóa vĩnh viễn sách vì đã có lịch sử mượn trả");
+        }
+
+        // Xóa ảnh bìa trên Cloudinary
+        String currentCoverUrl = book.getCoverImageUrl();
+        String coverPublicId = extractPublicId(currentCoverUrl);
+        if (coverPublicId != null && !coverPublicId.isBlank()) {
+            cloudinaryService.deleteImage(coverPublicId);
+        }
+
+        // Xóa file PDF trên PrivateFileService
+        if (book.getFileUrl() != null && !book.getFileUrl().isBlank()) {
+            privateFileService.deleteFile(book.getFileUrl());
+        }
+
+        // Thực hiện xóa vĩnh viễn
+        bookRepository.delete(book);
     }
 
     private void validateCreateRequest(CreateBookRequest request, MultipartFile cover, MultipartFile file) {
@@ -262,6 +308,11 @@ public class BookServiceImpl implements BookService {
         List<Category> categories = categoryRepository.findAllById(categoryIds);
         ensureAllIdsResolved(categoryIds, categories.stream().map(Category::getId).collect(Collectors.toSet()),
                 "Category");
+        for (Category category : categories) {
+            if (category.isDeleted()) {
+                throw new BusinessException("Không thể liên kết với thể loại đã bị xóa: " + category.getName());
+            }
+        }
         book.setCategories(new HashSet<>(categories));
     }
 
@@ -275,6 +326,11 @@ public class BookServiceImpl implements BookService {
         }
         List<Author> authors = authorRepository.findAllById(authorIds);
         ensureAllIdsResolved(authorIds, authors.stream().map(Author::getId).collect(Collectors.toSet()), "Author");
+        for (Author author : authors) {
+            if (author.isDeleted()) {
+                throw new BusinessException("Không thể liên kết với tác giả đã bị xóa: " + author.getName());
+            }
+        }
         book.setAuthors(new HashSet<>(authors));
     }
 

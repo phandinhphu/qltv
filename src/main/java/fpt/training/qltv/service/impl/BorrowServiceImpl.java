@@ -119,20 +119,15 @@ public class BorrowServiceImpl implements BorrowService {
             throw new BusinessException("Sách đã được trả");
         }
 
-        Book book = borrowRecord.getBook();
         borrowRecord.setReturnDate(LocalDateTime.now());
         borrowRecord.setStatus(BorrowStatus.RETURNED);
         borrowRecord.setDownloadToken(null);
         borrowRecord.setTokenExpiredAt(null);
         borrowRecord.setUpdatedAt(LocalDateTime.now());
 
-        book.setAvailableCopies((book.getAvailableCopies() == null ? 0 : book.getAvailableCopies()) + 1);
-        if (book.getStatus() != BookStatus.INACTIVE) {
-            book.setStatus(BookStatus.AVAILABLE);
-        }
+        bookRepository.incrementAvailableCopies(borrowRecord.getBook().getId());
 
-        bookRepository.save(book);
-        return toResponse(borrowRecordRepository.save(borrowRecord));
+        return toResponse(borrowRecord);
     }
 
     @Override
@@ -183,14 +178,6 @@ public class BorrowServiceImpl implements BorrowService {
         }
         return userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User", id));
-    }
-
-    private Book getBookOrThrow(Long id) {
-        if (id == null) {
-            throw new BusinessException("Id sách không được để trống");
-        }
-        return bookRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Book", id));
     }
 
     private BorrowRecord getBorrowRecordOrThrow(Long id) {

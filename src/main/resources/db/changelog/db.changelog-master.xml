@@ -17,5 +17,6 @@
     <include file="db/changelog/20260524_000001_insert_more_seed_data.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/20260531_000001_create_table_refresh_tokens.xml" relativeToChangelogFile="false"/>
     <include file="db/changelog/20260730_000001_add_deleted_column_to_books.xml" relativeToChangelogFile="false"/>
+    <include file="db/changelog/20260803_000001_add_deleted_column_to_categories_and_authors.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>

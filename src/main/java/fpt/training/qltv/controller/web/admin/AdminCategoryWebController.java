@@ -84,4 +84,32 @@ public class AdminCategoryWebController {
         }
         return "redirect:/admin/categories";
     }
+
+    @GetMapping("/trash")
+    public String trash(Model model) {
+        model.addAttribute("categories", categoryService.findAllDeleted());
+        return "admin/category/trash";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restore(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            categoryService.restore(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Khôi phục danh mục thành công");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/categories/trash";
+    }
+
+    @PostMapping("/{id}/force")
+    public String forceDelete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            categoryService.forceDelete(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa vĩnh viễn danh mục thành công");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/categories/trash";
+    }
 }

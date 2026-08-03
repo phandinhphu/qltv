@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse toggleActive(Long id) {
         User user = getUserOrThrow(id);
         user.setActive(!user.isActive());
-        return toResponse(userRepository.save(user));
+        return toResponse(user);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class UserServiceImpl implements UserService {
         handlePasswordChange(request, user);
 
         user.setUpdatedAt(LocalDateTime.now());
-        return toResponse(userRepository.save(user));
+        return toResponse(user);
     }
 
     private User getUserOrThrow(Long id) {

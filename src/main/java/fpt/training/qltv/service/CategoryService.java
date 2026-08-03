@@ -9,6 +9,8 @@ public interface CategoryService {
 
     List<CategoryResponse> findAll();
 
+    List<CategoryResponse> findAllDeleted();
+
     CategoryResponse findById(Long id);
 
     CategoryResponse create(CreateCategoryRequest request);
@@ -16,4 +18,8 @@ public interface CategoryService {
     CategoryResponse update(Long id, UpdateCategoryRequest request);
 
     void delete(Long id);
+
+    void restore(Long id);
+
+    void forceDelete(Long id);
 }

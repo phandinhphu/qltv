@@ -59,4 +59,18 @@ public class CategoryApiController {
         categoryService.delete(id);
         return ResponseEntity.ok(ApiResponse.successWithoutData("Xóa thể loại thành công"));
     }
+
+    @PostMapping("/{id}/restore")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> restore(@PathVariable Long id) {
+        categoryService.restore(id);
+        return ResponseEntity.ok(ApiResponse.successWithoutData("Khôi phục thể loại thành công"));
+    }
+
+    @DeleteMapping("/{id}/force")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> forceDelete(@PathVariable Long id) {
+        categoryService.forceDelete(id);
+        return ResponseEntity.ok(ApiResponse.successWithoutData("Xóa vĩnh viễn thể loại thành công"));
+    }
 }

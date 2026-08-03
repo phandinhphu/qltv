@@ -46,7 +46,7 @@ public class AuthorServiceImpl implements AuthorService {
     public PageResponse<AuthorResponse> findAll(AuthorFilterRequest filter, int page, int size) {
         AuthorFilterRequest safeFilter = filter == null ? new AuthorFilterRequest() : filter;
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
-        Specification<Author> specification = AuthorSpecification.hasName(safeFilter.getName());
+        Specification<Author> specification = AuthorSpecification.of(safeFilter.getName(), safeFilter.getDeleted());
 
         Page<AuthorSummaryProjection> result = authorRepository.findBy(specification, q -> q
             .as(AuthorSummaryProjection.class)
@@ -60,15 +60,13 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     @Cacheable(value = "authors", key = "#id")
     public AuthorResponse findById(Long id) {
-        return toResponse(getAuthorOrThrow(id));
+        return toResponse(getActiveAuthorOrThrow(id));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AuthorResponse create(CreateAuthorRequest request, MultipartFile avatar) {
-        if (authorRepository.existsByName(request.getName().trim())) {
-            throw new BusinessException("Tác giả đã tồn tại với tên: " + request.getName().trim());
-        }
+        ensureNameUnique(request.getName(), null);
         Author author = new Author();
         author.setName(request.getName().trim());
         author.setBio(request.getBio());
@@ -76,11 +74,6 @@ public class AuthorServiceImpl implements AuthorService {
         author.setUpdatedAt(LocalDateTime.now());
         if (avatar != null && !avatar.isEmpty()) {
             validateAvatar(avatar);
-            String currentAvatarUrl = author.getAvatarUrl();
-            String publicId = extractPublicId(currentAvatarUrl);
-            if (publicId != null && !publicId.isBlank()) {
-                cloudinaryService.deleteImage(publicId);
-            }
             author.setAvatarUrl(uploadAvatar(avatar));
         }
 
@@ -91,13 +84,10 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "authors", key = "#id")
     public AuthorResponse update(Long id, UpdateAuthorRequest request, MultipartFile avatar) {
-        Author author = getAuthorOrThrow(id);
+        Author author = getActiveAuthorOrThrow(id);
         if (request.getName() != null) {
-            String trimmedName = request.getName().trim();
-            if (authorRepository.existsByName(trimmedName) && !trimmedName.equals(author.getName())) {
-                throw new BusinessException("Tác giả đã tồn tại với tên: " + trimmedName);
-            }
-            author.setName(trimmedName);
+            ensureNameUnique(request.getName(), author.getId());
+            author.setName(request.getName().trim());
         }
 
         if (request.getBio() != null) {
@@ -106,22 +96,78 @@ public class AuthorServiceImpl implements AuthorService {
 
         if (avatar != null && !avatar.isEmpty()) {
             validateAvatar(avatar);
+            String currentAvatarUrl = author.getAvatarUrl();
+            String publicId = extractPublicId(currentAvatarUrl);
+            if (publicId != null && !publicId.isBlank()) {
+                cloudinaryService.deleteImage(publicId);
+            }
             author.setAvatarUrl(uploadAvatar(avatar));
         }
 
         author.setUpdatedAt(LocalDateTime.now());
-        return toResponse(authorRepository.save(author));
+        return toResponse(author);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "authors", key = "#id")
     public void delete(Long id) {
+        Author author = getActiveAuthorOrThrow(id);
+        boolean hasActiveBooks = author.getBooks().stream().anyMatch(book -> !book.isDeleted());
+        if (hasActiveBooks) {
+            throw new BusinessException("Không thể xóa tác giả vì vẫn còn sách đang hoạt động liên kết với tác giả này");
+        }
+        author.setDeleted(true);
+        author.setUpdatedAt(LocalDateTime.now());
+        authorRepository.save(author);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(value = "authors", key = "#id")
+    public void restore(Long id) {
         Author author = getAuthorOrThrow(id);
+        if (!author.isDeleted()) {
+            throw new BusinessException("Tác giả chưa bị xóa");
+        }
+        if (authorRepository.existsByNameAndDeletedFalse(author.getName())) {
+            throw new BusinessException("Không thể khôi phục vì tên tác giả này đã được sử dụng bởi một tác giả khác");
+        }
+        author.setDeleted(false);
+        author.setUpdatedAt(LocalDateTime.now());
+        authorRepository.save(author);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(value = "authors", key = "#id")
+    public void forceDelete(Long id) {
+        Author author = getAuthorOrThrow(id);
+        if (!author.isDeleted()) {
+            throw new BusinessException("Tác giả phải được xóa mềm trước khi xóa vĩnh viễn");
+        }
         if (author.getBooks() != null && !author.getBooks().isEmpty()) {
-            throw new BusinessException("Không thể xóa tác giả vì vẫn còn sách liên kết với tác giả này");
+            throw new BusinessException("Không thể xóa vĩnh viễn tác giả vì vẫn còn sách liên kết (kể cả sách đã xóa mềm)");
+        }
+        String currentAvatarUrl = author.getAvatarUrl();
+        String publicId = extractPublicId(currentAvatarUrl);
+        if (publicId != null && !publicId.isBlank()) {
+            cloudinaryService.deleteImage(publicId);
         }
         authorRepository.delete(author);
+    }
+
+    private void ensureNameUnique(String name, Long excludedAuthorId) {
+        String trimmedName = name.trim();
+        authorRepository.findByName(trimmedName).ifPresent(existing -> {
+            if (!existing.getId().equals(excludedAuthorId)) {
+                if (existing.isDeleted()) {
+                    throw new BusinessException("Tác giả trùng với một tác giả đã bị xóa tạm thời trong Thùng rác. Bạn cần khôi phục lại hoặc xóa vĩnh viễn tác giả cũ để sử dụng tên này.");
+                } else {
+                    throw new BusinessException("Tác giả đã tồn tại với tên: " + trimmedName);
+                }
+            }
+        });
     }
 
     private Author getAuthorOrThrow(Long id) {
@@ -130,6 +176,17 @@ public class AuthorServiceImpl implements AuthorService {
         }
         return authorRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Author", id));
+    }
+
+    private Author getActiveAuthorOrThrow(Long id) {
+        if (id == null) {
+            throw new BusinessException("Id tác giả không được để trống");
+        }
+        Author author = getAuthorOrThrow(id);
+        if (author.isDeleted()) {
+            throw new ResourceNotFoundException("Author", id);
+        }
+        return author;
     }
 
     private void validateAvatar(MultipartFile avatar) {

@@ -30,7 +30,15 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     @Cacheable(value = "categories_all")
     public List<CategoryResponse> findAll() {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findAllByDeletedFalse().stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> findAllDeleted() {
+        return categoryRepository.findAllByDeletedTrue().stream()
             .map(this::toResponse)
             .toList();
     }
@@ -39,7 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     @Cacheable(value = "categories", key = "#id")
     public CategoryResponse findById(Long id) {
-        return toResponse(getCategoryOrThrow(id));
+        return toResponse(getActiveCategoryOrThrow(id));
     }
 
     @Override
@@ -65,7 +73,7 @@ public class CategoryServiceImpl implements CategoryService {
         @CacheEvict(value = "categories_all", allEntries = true)
     })
     public CategoryResponse update(Long id, UpdateCategoryRequest request) {
-        Category category = getCategoryOrThrow(id);
+        Category category = getActiveCategoryOrThrow(id);
 
         if (request.getName() != null) {
             String trimmedName = request.getName().trim();
@@ -79,7 +87,7 @@ public class CategoryServiceImpl implements CategoryService {
             category.setDescription(request.getDescription());
         }
         category.setUpdatedAt(LocalDateTime.now());
-        return toResponse(categoryRepository.save(category));
+        return toResponse(category);
     }
 
     @Override
@@ -89,9 +97,51 @@ public class CategoryServiceImpl implements CategoryService {
         @CacheEvict(value = "categories_all", allEntries = true)
     })
     public void delete(Long id) {
+        Category category = getActiveCategoryOrThrow(id);
+        boolean hasActiveBooks = category.getBooks().stream().anyMatch(book -> !book.isDeleted());
+        if (hasActiveBooks) {
+            throw new BusinessException("Không thể xóa danh mục vì vẫn còn sách đang hoạt động thuộc danh mục này");
+        }
+        category.setDeleted(true);
+        category.setUpdatedAt(LocalDateTime.now());
+        categoryRepository.save(category);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+        @CacheEvict(value = "categories", key = "#id"),
+        @CacheEvict(value = "categories_all", allEntries = true)
+    })
+    public void restore(Long id) {
         Category category = getCategoryOrThrow(id);
+        if (!category.isDeleted()) {
+            throw new BusinessException("Danh mục chưa bị xóa");
+        }
+        if (categoryRepository.existsByNameAndDeletedFalse(category.getName())) {
+            throw new BusinessException("Không thể khôi phục vì tên danh mục này đã được sử dụng bởi một danh mục khác");
+        }
+        if (categoryRepository.existsBySlugAndDeletedFalse(category.getSlug())) {
+            throw new BusinessException("Không thể khôi phục vì slug danh mục này đã được sử dụng bởi một danh mục khác");
+        }
+        category.setDeleted(false);
+        category.setUpdatedAt(LocalDateTime.now());
+        categoryRepository.save(category);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+        @CacheEvict(value = "categories", key = "#id"),
+        @CacheEvict(value = "categories_all", allEntries = true)
+    })
+    public void forceDelete(Long id) {
+        Category category = getCategoryOrThrow(id);
+        if (!category.isDeleted()) {
+            throw new BusinessException("Danh mục phải được xóa mềm trước khi xóa vĩnh viễn");
+        }
         if (category.getBooks() != null && !category.getBooks().isEmpty()) {
-            throw new BusinessException("Không thể xóa danh mục vì vẫn còn sách thuộc danh mục này");
+            throw new BusinessException("Không thể xóa vĩnh viễn danh mục vì vẫn còn sách liên kết (kể cả sách đã xóa mềm)");
         }
         categoryRepository.delete(category);
     }
@@ -99,7 +149,11 @@ public class CategoryServiceImpl implements CategoryService {
     private void ensureSlugUnique(String slug, Long excludedCategoryId) {
         categoryRepository.findBySlug(slug).ifPresent(existing -> {
             if (!Objects.equals(existing.getId(), excludedCategoryId)) {
-                throw new BusinessException("Slug danh mục đã tồn tại: " + slug);
+                if (existing.isDeleted()) {
+                    throw new BusinessException("Thể loại trùng với một thể loại đã bị xóa tạm thời trong Thùng rác. Bạn cần khôi phục lại hoặc xóa vĩnh viễn thể loại cũ để sử dụng tên này.");
+                } else {
+                    throw new BusinessException("Slug danh mục đã tồn tại: " + slug);
+                }
             }
         });
     }
@@ -110,6 +164,17 @@ public class CategoryServiceImpl implements CategoryService {
         }
         return categoryRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Category", id));
+    }
+
+    private Category getActiveCategoryOrThrow(Long id) {
+        if (id == null) {
+            throw new BusinessException("Id danh mục không được để trống");
+        }
+        Category category = getCategoryOrThrow(id);
+        if (category.isDeleted()) {
+            throw new ResourceNotFoundException("Category", id);
+        }
+        return category;
     }
 
     private String generateSlug(String name) {

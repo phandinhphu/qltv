@@ -97,6 +97,43 @@ public class AdminAuthorWebController {
         return "redirect:/admin/authors";
     }
 
+    @GetMapping("/trash")
+    public String trash(@ModelAttribute AuthorFilterRequest filter,
+                        @RequestParam(defaultValue = "0") int page,
+                        Model model) {
+        if (filter == null) {
+            filter = new AuthorFilterRequest();
+        }
+        filter.setDeleted(true);
+        PageResponse<AuthorResponse> pageData = authorService.findAll(filter, page, 10);
+        model.addAttribute("pageData", pageData);
+        model.addAttribute("filter", filter);
+        model.addAttribute("queryParams", buildQueryParams(filter));
+        return "admin/author/trash";
+    }
+
+    @PostMapping("/{id}/restore")
+    public String restore(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            authorService.restore(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Khôi phục tác giả thành công");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/authors/trash";
+    }
+
+    @PostMapping("/{id}/force")
+    public String forceDelete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            authorService.forceDelete(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa vĩnh viễn tác giả thành công");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/authors/trash";
+    }
+
     private Map<String, Object> buildQueryParams(AuthorFilterRequest filter) {
         Map<String, Object> params = new LinkedHashMap<>();
         if (filter == null) {
@@ -104,6 +141,9 @@ public class AdminAuthorWebController {
         }
         if (filter.getName() != null && !filter.getName().isBlank()) {
             params.put("name", filter.getName().trim());
+        }
+        if (filter.getDeleted() != null) {
+            params.put("deleted", filter.getDeleted());
         }
         return params;
     }
