@@ -1,11 +1,8 @@
 package fpt.training.qltv.repository;
 
 import fpt.training.qltv.entity.Book;
+import java.util.List;
 import java.util.Optional;
-// import fpt.training.qltv.repository.projection.BookSummaryProjection;
-// import org.springframework.data.domain.Page;
-// import org.springframework.data.domain.Pageable;
-// import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
@@ -20,9 +17,13 @@ public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificat
 
     boolean existsByIsbn(String isbn);
 
-    long countByDeletedFalse();
+    // ---- Trash bin queries (bypass @SQLRestriction bằng native SQL) ----
 
-    boolean existsByIsbnAndDeletedFalse(String isbn);
+    @Query(value = "SELECT * FROM books WHERE id = :id AND deleted = true", nativeQuery = true)
+    Optional<Book> findByIdDeleted(@Param("id") Long id);
+
+    @Query(value = "SELECT * FROM books WHERE deleted = true ORDER BY updated_at DESC", nativeQuery = true)
+    List<Book> findAllDeleted();
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT b FROM Book b WHERE b.id = :id")

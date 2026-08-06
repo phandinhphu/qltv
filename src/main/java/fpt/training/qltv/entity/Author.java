@@ -11,11 +11,13 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "authors")
+@SQLRestriction("deleted = false")
 public class Author extends BaseEntity {
 
     @Id

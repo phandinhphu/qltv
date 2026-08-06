@@ -11,11 +11,13 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "categories")
+@SQLRestriction("deleted = false")
 public class Category extends BaseEntity {
 
     @Id

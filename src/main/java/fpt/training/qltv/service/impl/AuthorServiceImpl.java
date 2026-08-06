@@ -14,21 +14,22 @@ import fpt.training.qltv.repository.projection.AuthorSummaryProjection;
 import fpt.training.qltv.repository.spec.AuthorSpecification;
 import fpt.training.qltv.service.AuthorService;
 import fpt.training.qltv.service.CloudinaryService;
-import java.time.LocalDateTime;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -46,7 +47,8 @@ public class AuthorServiceImpl implements AuthorService {
     public PageResponse<AuthorResponse> findAll(AuthorFilterRequest filter, int page, int size) {
         AuthorFilterRequest safeFilter = filter == null ? new AuthorFilterRequest() : filter;
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
-        Specification<Author> specification = AuthorSpecification.of(safeFilter.getName(), safeFilter.getDeleted());
+        // @SQLRestriction tự động thêm "deleted = false" — không cần truyền tham số deleted nữa
+        Specification<Author> specification = AuthorSpecification.of(safeFilter.getName());
 
         Page<AuthorSummaryProjection> result = authorRepository.findBy(specification, q -> q
             .as(AuthorSummaryProjection.class)
@@ -58,9 +60,24 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     @Transactional(readOnly = true)
+    public PageResponse<AuthorResponse> findAllDeleted(int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "updatedAt"));
+        // Native query bypass @SQLRestriction để lấy trash bin
+        List<Author> deletedAuthors = authorRepository.findAllDeleted();
+        // Thực hiện phân trang thủ công trên kết quả native query
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), deletedAuthors.size());
+        List<Author> pageContent = start >= deletedAuthors.size() ? List.of() : deletedAuthors.subList(start, end);
+        Page<Author> result = new PageImpl<>(pageContent, pageable, deletedAuthors.size());
+        return PageResponse.of(result.map(this::toResponse));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "authors", key = "#id")
     public AuthorResponse findById(Long id) {
-        return toResponse(getActiveAuthorOrThrow(id));
+        // findById đã bị @SQLRestriction filter — nếu đã xóa sẽ trả về empty → 404
+        return toResponse(getAuthorOrThrow(id));
     }
 
     @Override
@@ -70,8 +87,6 @@ public class AuthorServiceImpl implements AuthorService {
         Author author = new Author();
         author.setName(request.getName().trim());
         author.setBio(request.getBio());
-        author.setCreatedAt(LocalDateTime.now());
-        author.setUpdatedAt(LocalDateTime.now());
         if (avatar != null && !avatar.isEmpty()) {
             validateAvatar(avatar);
             author.setAvatarUrl(uploadAvatar(avatar));
@@ -84,7 +99,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "authors", key = "#id")
     public AuthorResponse update(Long id, UpdateAuthorRequest request, MultipartFile avatar) {
-        Author author = getActiveAuthorOrThrow(id);
+        Author author = getAuthorOrThrow(id);
         if (request.getName() != null) {
             ensureNameUnique(request.getName(), author.getId());
             author.setName(request.getName().trim());
@@ -104,7 +119,6 @@ public class AuthorServiceImpl implements AuthorService {
             author.setAvatarUrl(uploadAvatar(avatar));
         }
 
-        author.setUpdatedAt(LocalDateTime.now());
         return toResponse(author);
     }
 
@@ -112,13 +126,13 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "authors", key = "#id")
     public void delete(Long id) {
-        Author author = getActiveAuthorOrThrow(id);
-        boolean hasActiveBooks = author.getBooks().stream().anyMatch(book -> !book.isDeleted());
-        if (hasActiveBooks) {
+        Author author = getAuthorOrThrow(id);
+        // Dùng native query đếm sách active — không bị ảnh hưởng bởi @SQLRestriction trên collection
+        long activeBookCount = authorRepository.countActiveBooksByAuthorId(id);
+        if (activeBookCount > 0) {
             throw new BusinessException("Không thể xóa tác giả vì vẫn còn sách đang hoạt động liên kết với tác giả này");
         }
         author.setDeleted(true);
-        author.setUpdatedAt(LocalDateTime.now());
         authorRepository.save(author);
     }
 
@@ -126,15 +140,12 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "authors", key = "#id")
     public void restore(Long id) {
-        Author author = getAuthorOrThrow(id);
-        if (!author.isDeleted()) {
-            throw new BusinessException("Tác giả chưa bị xóa");
-        }
-        if (authorRepository.existsByNameAndDeletedFalse(author.getName())) {
+        // Cần bypass @SQLRestriction để tìm bản ghi đã xóa
+        Author author = getDeletedAuthorOrThrow(id);
+        if (authorRepository.existsByName(author.getName())) {
             throw new BusinessException("Không thể khôi phục vì tên tác giả này đã được sử dụng bởi một tác giả khác");
         }
         author.setDeleted(false);
-        author.setUpdatedAt(LocalDateTime.now());
         authorRepository.save(author);
     }
 
@@ -142,11 +153,10 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "authors", key = "#id")
     public void forceDelete(Long id) {
-        Author author = getAuthorOrThrow(id);
-        if (!author.isDeleted()) {
-            throw new BusinessException("Tác giả phải được xóa mềm trước khi xóa vĩnh viễn");
-        }
-        if (author.getBooks() != null && !author.getBooks().isEmpty()) {
+        Author author = getDeletedAuthorOrThrow(id);
+        // Kiểm tra sách liên kết bằng native query (bao gồm cả sách đã xóa mềm)
+        long totalBookCount = authorRepository.countActiveBooksByAuthorId(id);
+        if (totalBookCount > 0) {
             throw new BusinessException("Không thể xóa vĩnh viễn tác giả vì vẫn còn sách liên kết (kể cả sách đã xóa mềm)");
         }
         String currentAvatarUrl = author.getAvatarUrl();
@@ -157,18 +167,7 @@ public class AuthorServiceImpl implements AuthorService {
         authorRepository.delete(author);
     }
 
-    private void ensureNameUnique(String name, Long excludedAuthorId) {
-        String trimmedName = name.trim();
-        authorRepository.findByName(trimmedName).ifPresent(existing -> {
-            if (!existing.getId().equals(excludedAuthorId)) {
-                if (existing.isDeleted()) {
-                    throw new BusinessException("Tác giả trùng với một tác giả đã bị xóa tạm thời trong Thùng rác. Bạn cần khôi phục lại hoặc xóa vĩnh viễn tác giả cũ để sử dụng tên này.");
-                } else {
-                    throw new BusinessException("Tác giả đã tồn tại với tên: " + trimmedName);
-                }
-            }
-        });
-    }
+    // ---- Helper: lấy author active (bị @SQLRestriction filter, 404 nếu đã xóa) ----
 
     private Author getAuthorOrThrow(Long id) {
         if (id == null) {
@@ -178,15 +177,24 @@ public class AuthorServiceImpl implements AuthorService {
             .orElseThrow(() -> new ResourceNotFoundException("Author", id));
     }
 
-    private Author getActiveAuthorOrThrow(Long id) {
+    // ---- Helper: lấy author đã xóa (bypass @SQLRestriction bằng native query) ----
+
+    private Author getDeletedAuthorOrThrow(Long id) {
         if (id == null) {
             throw new BusinessException("Id tác giả không được để trống");
         }
-        Author author = getAuthorOrThrow(id);
-        if (author.isDeleted()) {
-            throw new ResourceNotFoundException("Author", id);
-        }
-        return author;
+        return authorRepository.findByIdDeleted(id)
+            .orElseThrow(() -> new BusinessException("Tác giả đã xóa không tồn tại hoặc chưa được xóa mềm"));
+    }
+
+    private void ensureNameUnique(String name, Long excludedAuthorId) {
+        String trimmedName = name.trim();
+        authorRepository.findByName(trimmedName).ifPresent(existing -> {
+            if (!existing.getId().equals(excludedAuthorId)) {
+                // findByName đã chỉ tìm active (nhờ @SQLRestriction) nên không cần check isDeleted()
+                throw new BusinessException("Tác giả đã tồn tại với tên: " + trimmedName);
+            }
+        });
     }
 
     private void validateAvatar(MultipartFile avatar) {

@@ -9,16 +9,15 @@ import fpt.training.qltv.exception.common.ResourceNotFoundException;
 import fpt.training.qltv.repository.CategoryRepository;
 import fpt.training.qltv.service.CategoryService;
 import java.text.Normalizer;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +29,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     @Cacheable(value = "categories_all")
     public List<CategoryResponse> findAll() {
-        return categoryRepository.findAllByDeletedFalse().stream()
+        // @SQLRestriction tự động chỉ lấy deleted = false — không cần findAllByDeletedFalse nữa
+        return categoryRepository.findAll().stream()
             .map(this::toResponse)
             .toList();
     }
@@ -38,7 +38,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional(readOnly = true)
     public List<CategoryResponse> findAllDeleted() {
-        return categoryRepository.findAllByDeletedTrue().stream()
+        // Native query bypass @SQLRestriction để lấy trash bin
+        return categoryRepository.findAllDeleted().stream()
             .map(this::toResponse)
             .toList();
     }
@@ -47,7 +48,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     @Cacheable(value = "categories", key = "#id")
     public CategoryResponse findById(Long id) {
-        return toResponse(getActiveCategoryOrThrow(id));
+        // findById đã bị @SQLRestriction filter — nếu đã xóa sẽ trả về empty → 404
+        return toResponse(getCategoryOrThrow(id));
     }
 
     @Override
@@ -60,8 +62,6 @@ public class CategoryServiceImpl implements CategoryService {
         category.setDescription(request.getDescription());
         category.setSlug(generateSlug(trimmedName));
         ensureSlugUnique(category.getSlug(), null);
-        category.setCreatedAt(LocalDateTime.now());
-        category.setUpdatedAt(LocalDateTime.now());
 
         return toResponse(categoryRepository.save(category));
     }
@@ -73,7 +73,7 @@ public class CategoryServiceImpl implements CategoryService {
         @CacheEvict(value = "categories_all", allEntries = true)
     })
     public CategoryResponse update(Long id, UpdateCategoryRequest request) {
-        Category category = getActiveCategoryOrThrow(id);
+        Category category = getCategoryOrThrow(id);
 
         if (request.getName() != null) {
             String trimmedName = request.getName().trim();
@@ -86,7 +86,6 @@ public class CategoryServiceImpl implements CategoryService {
         if (request.getDescription() != null) {
             category.setDescription(request.getDescription());
         }
-        category.setUpdatedAt(LocalDateTime.now());
         return toResponse(category);
     }
 
@@ -97,13 +96,13 @@ public class CategoryServiceImpl implements CategoryService {
         @CacheEvict(value = "categories_all", allEntries = true)
     })
     public void delete(Long id) {
-        Category category = getActiveCategoryOrThrow(id);
-        boolean hasActiveBooks = category.getBooks().stream().anyMatch(book -> !book.isDeleted());
-        if (hasActiveBooks) {
+        Category category = getCategoryOrThrow(id);
+        // Dùng native query đếm sách active — không bị ảnh hưởng bởi @SQLRestriction trên collection
+        long activeBookCount = categoryRepository.countActiveBooksByCategoryId(id);
+        if (activeBookCount > 0) {
             throw new BusinessException("Không thể xóa danh mục vì vẫn còn sách đang hoạt động thuộc danh mục này");
         }
         category.setDeleted(true);
-        category.setUpdatedAt(LocalDateTime.now());
         categoryRepository.save(category);
     }
 
@@ -114,18 +113,15 @@ public class CategoryServiceImpl implements CategoryService {
         @CacheEvict(value = "categories_all", allEntries = true)
     })
     public void restore(Long id) {
-        Category category = getCategoryOrThrow(id);
-        if (!category.isDeleted()) {
-            throw new BusinessException("Danh mục chưa bị xóa");
-        }
-        if (categoryRepository.existsByNameAndDeletedFalse(category.getName())) {
+        // Cần bypass @SQLRestriction để tìm bản ghi đã xóa
+        Category category = getDeletedCategoryOrThrow(id);
+        if (categoryRepository.existsByName(category.getName())) {
             throw new BusinessException("Không thể khôi phục vì tên danh mục này đã được sử dụng bởi một danh mục khác");
         }
-        if (categoryRepository.existsBySlugAndDeletedFalse(category.getSlug())) {
+        if (categoryRepository.existsBySlug(category.getSlug())) {
             throw new BusinessException("Không thể khôi phục vì slug danh mục này đã được sử dụng bởi một danh mục khác");
         }
         category.setDeleted(false);
-        category.setUpdatedAt(LocalDateTime.now());
         categoryRepository.save(category);
     }
 
@@ -136,27 +132,14 @@ public class CategoryServiceImpl implements CategoryService {
         @CacheEvict(value = "categories_all", allEntries = true)
     })
     public void forceDelete(Long id) {
-        Category category = getCategoryOrThrow(id);
-        if (!category.isDeleted()) {
-            throw new BusinessException("Danh mục phải được xóa mềm trước khi xóa vĩnh viễn");
-        }
+        Category category = getDeletedCategoryOrThrow(id);
         if (category.getBooks() != null && !category.getBooks().isEmpty()) {
             throw new BusinessException("Không thể xóa vĩnh viễn danh mục vì vẫn còn sách liên kết (kể cả sách đã xóa mềm)");
         }
         categoryRepository.delete(category);
     }
 
-    private void ensureSlugUnique(String slug, Long excludedCategoryId) {
-        categoryRepository.findBySlug(slug).ifPresent(existing -> {
-            if (!Objects.equals(existing.getId(), excludedCategoryId)) {
-                if (existing.isDeleted()) {
-                    throw new BusinessException("Thể loại trùng với một thể loại đã bị xóa tạm thời trong Thùng rác. Bạn cần khôi phục lại hoặc xóa vĩnh viễn thể loại cũ để sử dụng tên này.");
-                } else {
-                    throw new BusinessException("Slug danh mục đã tồn tại: " + slug);
-                }
-            }
-        });
-    }
+    // ---- Helper: lấy category active (bị @SQLRestriction filter, 404 nếu đã xóa) ----
 
     private Category getCategoryOrThrow(Long id) {
         if (id == null) {
@@ -166,15 +149,23 @@ public class CategoryServiceImpl implements CategoryService {
             .orElseThrow(() -> new ResourceNotFoundException("Category", id));
     }
 
-    private Category getActiveCategoryOrThrow(Long id) {
+    // ---- Helper: lấy category đã xóa (bypass @SQLRestriction bằng native query) ----
+
+    private Category getDeletedCategoryOrThrow(Long id) {
         if (id == null) {
             throw new BusinessException("Id danh mục không được để trống");
         }
-        Category category = getCategoryOrThrow(id);
-        if (category.isDeleted()) {
-            throw new ResourceNotFoundException("Category", id);
-        }
-        return category;
+        return categoryRepository.findByIdDeleted(id)
+            .orElseThrow(() -> new BusinessException("Danh mục đã xóa không tồn tại hoặc chưa được xóa mềm"));
+    }
+
+    private void ensureSlugUnique(String slug, Long excludedCategoryId) {
+        categoryRepository.findBySlug(slug).ifPresent(existing -> {
+            if (!Objects.equals(existing.getId(), excludedCategoryId)) {
+                // findBySlug đã chỉ tìm active (nhờ @SQLRestriction) nên không cần check isDeleted()
+                throw new BusinessException("Slug danh mục đã tồn tại: " + slug);
+            }
+        });
     }
 
     private String generateSlug(String name) {

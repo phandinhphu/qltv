@@ -21,11 +21,13 @@ import java.util.List;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "books")
+@SQLRestriction("deleted = false")
 public class Book extends BaseEntity {
 
     @Id

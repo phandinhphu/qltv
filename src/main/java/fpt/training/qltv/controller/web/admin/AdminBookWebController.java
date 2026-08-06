@@ -117,18 +117,10 @@ public class AdminBookWebController {
     }
 
     @GetMapping("/trash")
-    public String trash(@ModelAttribute BookFilterRequest filter,
-                        @RequestParam(defaultValue = "0") int page,
-                        Model model) {
-        if (filter == null) {
-            filter = new BookFilterRequest();
-        }
-        filter.setDeleted(true);
-        PageResponse<BookResponse> pageData = bookService.findAll(filter, page, 10);
+    public String trash(@RequestParam(defaultValue = "0") int page, Model model) {
+        PageResponse<BookResponse> pageData = bookService.findAllDeleted(page, 10);
         model.addAttribute("pageData", pageData);
-        model.addAttribute("filter", filter);
         model.addAttribute("categories", categoryService.findAll());
-        model.addAttribute("queryParams", buildQueryParams(filter));
         return "admin/book/trash";
     }
 
@@ -182,9 +174,6 @@ public class AdminBookWebController {
         }
         if (filter.getPublishYear() != null) {
             params.put("publishYear", filter.getPublishYear());
-        }
-        if (filter.getDeleted() != null) {
-            params.put("deleted", filter.getDeleted());
         }
         return params;
     }

@@ -43,6 +43,16 @@ public class BookApiController {
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
+    @GetMapping("/trash")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<PageResponse<BookResponse>>> findAllDeleted(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PageResponse<BookResponse> pageResponse = PageResponseMapper.from(
+                bookService.findAllDeleted(page, size));
+        return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<BookDetailResponse>> findById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(bookService.findById(id), "Thành công"));

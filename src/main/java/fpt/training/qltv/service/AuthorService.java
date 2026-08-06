@@ -11,6 +11,8 @@ public interface AuthorService {
 
     PageResponse<AuthorResponse> findAll(AuthorFilterRequest filter, int page, int size);
 
+    PageResponse<AuthorResponse> findAllDeleted(int page, int size);
+
     AuthorResponse findById(Long id);
 
     AuthorResponse create(CreateAuthorRequest request, MultipartFile avatar);

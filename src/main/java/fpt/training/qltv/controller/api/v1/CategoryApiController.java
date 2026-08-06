@@ -32,6 +32,12 @@ public class CategoryApiController {
         return ResponseEntity.ok(ApiResponse.success(categoryService.findAll(), "Thành công"));
     }
 
+    @GetMapping("/trash")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> findAllDeleted() {
+        return ResponseEntity.ok(ApiResponse.success(categoryService.findAllDeleted(), "Thành công"));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryResponse>> findById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(categoryService.findById(id), "Thành công"));

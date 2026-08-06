@@ -98,17 +98,9 @@ public class AdminAuthorWebController {
     }
 
     @GetMapping("/trash")
-    public String trash(@ModelAttribute AuthorFilterRequest filter,
-                        @RequestParam(defaultValue = "0") int page,
-                        Model model) {
-        if (filter == null) {
-            filter = new AuthorFilterRequest();
-        }
-        filter.setDeleted(true);
-        PageResponse<AuthorResponse> pageData = authorService.findAll(filter, page, 10);
+    public String trash(@RequestParam(defaultValue = "0") int page, Model model) {
+        PageResponse<AuthorResponse> pageData = authorService.findAllDeleted(page, 10);
         model.addAttribute("pageData", pageData);
-        model.addAttribute("filter", filter);
-        model.addAttribute("queryParams", buildQueryParams(filter));
         return "admin/author/trash";
     }
 
@@ -141,9 +133,6 @@ public class AdminAuthorWebController {
         }
         if (filter.getName() != null && !filter.getName().isBlank()) {
             params.put("name", filter.getName().trim());
-        }
-        if (filter.getDeleted() != null) {
-            params.put("deleted", filter.getDeleted());
         }
         return params;
     }

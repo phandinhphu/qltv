@@ -12,6 +12,8 @@ public interface BookService {
 
     PageResponse<BookResponse> findAll(BookFilterRequest filter, int page, int size);
 
+    PageResponse<BookResponse> findAllDeleted(int page, int size);
+
     BookDetailResponse findById(Long id);
 
     BookResponse create(CreateBookRequest request, MultipartFile cover, MultipartFile file);

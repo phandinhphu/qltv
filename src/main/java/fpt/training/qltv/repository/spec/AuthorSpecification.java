@@ -8,11 +8,13 @@ public final class AuthorSpecification {
     private AuthorSpecification() {
     }
 
-    public static Specification<Author> of(String name, Boolean deleted) {
-        Specification<Author> specification = (root, query, cb) -> cb.conjunction();
-        specification = specification.and(hasName(name));
-        specification = specification.and(hasDeleted(deleted));
-        return specification;
+    /**
+     * Xây dựng Specification filter cho Author.
+     * Điều kiện "deleted = false" được @SQLRestriction trên entity lo tự động,
+     * không cần thêm ở đây nữa.
+     */
+    public static Specification<Author> of(String name) {
+        return hasName(name);
     }
 
     private static Specification<Author> hasName(String name) {
@@ -21,15 +23,6 @@ public final class AuthorSpecification {
                 return null;
             }
             return cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
-        };
-    }
-
-    private static Specification<Author> hasDeleted(Boolean deleted) {
-        return (root, query, cb) -> {
-            if (deleted == null) {
-                return cb.equal(root.get("deleted"), false);
-            }
-            return cb.equal(root.get("deleted"), deleted);
         };
     }
 }

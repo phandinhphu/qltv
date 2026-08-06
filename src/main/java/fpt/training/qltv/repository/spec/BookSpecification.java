@@ -9,14 +9,18 @@ public final class BookSpecification {
     private BookSpecification() {
     }
 
+    /**
+     * Xây dựng Specification filter cho Book.
+     * Điều kiện "deleted = false" được @SQLRestriction trên entity lo tự động,
+     * không cần thêm ở đây nữa.
+     */
     public static Specification<Book> of(
             String title,
             Long categoryId,
             Long authorId,
             String language,
             BookStatus status,
-            Integer publishYear,
-            Boolean deleted) {
+            Integer publishYear) {
         Specification<Book> specification = (root, query, cb) -> cb.conjunction();
         specification = specification.and(hasTitle(title));
         specification = specification.and(hasCategoryId(categoryId));
@@ -24,7 +28,6 @@ public final class BookSpecification {
         specification = specification.and(hasLanguage(language));
         specification = specification.and(hasStatus(status));
         specification = specification.and(hasPublishYear(publishYear));
-        specification = specification.and(hasDeleted(deleted));
         return specification;
     }
 
@@ -81,15 +84,6 @@ public final class BookSpecification {
                 return null;
             }
             return cb.equal(root.get("publishYear"), publishYear);
-        };
-    }
-
-    private static Specification<Book> hasDeleted(Boolean deleted) {
-        return (root, query, cb) -> {
-            if (deleted == null) {
-                return cb.equal(root.get("deleted"), false);
-            }
-            return cb.equal(root.get("deleted"), deleted);
         };
     }
 }

@@ -33,7 +33,7 @@ public class DashboardServiceImpl implements DashboardService {
     @Cacheable(value = "dashboard")
     public DashboardResponse getDashboard() {
         DashboardResponse response = new DashboardResponse();
-        response.setTotalBooks(bookRepository.countByDeletedFalse());
+        response.setTotalBooks(bookRepository.count());
         response.setTotalUsers(userRepository.countByRole(Role.USER));
         response.setTotalActiveBorrows(borrowRecordRepository.countByStatus(BorrowStatus.BORROWING));
         response.setTotalOverdue(borrowRecordRepository.countByStatus(BorrowStatus.OVERDUE));
@@ -44,8 +44,8 @@ public class DashboardServiceImpl implements DashboardService {
 
     private List<BookResponse> getTopBorrowedBooks() {
         return borrowRecordRepository.findTopBorrowedBooks(PageRequest.of(0, 5)).stream()
-            .map(this::toBookResponse)
-            .toList();
+                .map(this::toBookResponse)
+                .toList();
     }
 
     private Map<String, Long> getBorrowCountByMonth() {
@@ -80,7 +80,9 @@ public class DashboardServiceImpl implements DashboardService {
         response.setStatus(book.getStatus());
         response.setCategoryNames(book.getCategories().stream().map(category -> category.getName()).toList());
         response.setAuthorNames(book.getAuthors().stream().map(author -> author.getName()).toList());
-        response.setAvgRating(book.getReviews().isEmpty() ? 0.0 : book.getReviews().stream().filter(review -> review.isVisible()).mapToInt(review -> review.getRating()).average().orElse(0.0));
+        response.setAvgRating(book.getReviews().isEmpty() ? 0.0
+                : book.getReviews().stream().filter(review -> review.isVisible()).mapToInt(review -> review.getRating())
+                        .average().orElse(0.0));
         response.setCreatedAt(book.getCreatedAt());
         response.setUpdatedAt(book.getUpdatedAt());
         return response;

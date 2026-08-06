@@ -14,5 +14,4 @@ public class BookFilterRequest {
     private String language;
     private BookStatus status;
     private Integer publishYear;
-    private Boolean deleted;
 }

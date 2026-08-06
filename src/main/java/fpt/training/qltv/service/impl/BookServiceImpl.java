@@ -27,7 +27,6 @@ import fpt.training.qltv.repository.spec.BookSpecification;
 import fpt.training.qltv.service.BookService;
 import fpt.training.qltv.service.CloudinaryService;
 import fpt.training.qltv.service.PrivateFileService;
-import java.time.LocalDateTime;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Comparator;
@@ -37,16 +36,17 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -71,14 +71,14 @@ public class BookServiceImpl implements BookService {
         BookFilterRequest safeFilter = filter == null ? new BookFilterRequest() : filter;
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1),
                 Sort.by(Sort.Direction.DESC, "createdAt"));
+        // @SQLRestriction tự động thêm "deleted = false" — không cần tham số deleted nữa
         Specification<Book> specification = BookSpecification.of(
                 safeFilter.getTitle(),
                 safeFilter.getCategoryId(),
                 safeFilter.getAuthorId(),
                 safeFilter.getLanguage(),
                 safeFilter.getStatus(),
-                safeFilter.getPublishYear(),
-                safeFilter.getDeleted());
+                safeFilter.getPublishYear());
 
         Page<BookSummaryProjection> result = bookRepository.findBy(specification, q -> q
                 .as(BookSummaryProjection.class)
@@ -89,13 +89,23 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
+    public PageResponse<BookResponse> findAllDeleted(int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "updatedAt"));
+        // Native query bypass @SQLRestriction để lấy trash bin
+        List<Book> deletedBooks = bookRepository.findAllDeleted();
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), deletedBooks.size());
+        List<Book> pageContent = start >= deletedBooks.size() ? List.of() : deletedBooks.subList(start, end);
+        Page<Book> result = new PageImpl<>(pageContent, pageable, deletedBooks.size());
+        return PageResponse.of(result.map(this::toSummaryResponse));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "books", key = "#id")
     public BookDetailResponse findById(Long id) {
-        Book book = getBookOrThrow(id);
-        if (book.isDeleted()) {
-            throw new ResourceNotFoundException("Book", id);
-        }
-        return toDetailResponse(book);
+        // findById đã bị @SQLRestriction filter — nếu đã xóa sẽ trả về empty → 404
+        return toDetailResponse(getBookOrThrow(id));
     }
 
     @Override
@@ -115,8 +125,6 @@ public class BookServiceImpl implements BookService {
         book.setFileUrl(privateFileService.saveBookFile(file));
         applyAssociations(book, request.getCategoryIds(), request.getAuthorIds());
         normalizeAvailabilityAndStatus(book);
-        book.setCreatedAt(LocalDateTime.now());
-        book.setUpdatedAt(LocalDateTime.now());
 
         return toSummaryResponse(bookRepository.save(book));
     }
@@ -170,7 +178,6 @@ public class BookServiceImpl implements BookService {
             applyAuthors(book, request.getAuthorIds());
         }
 
-        book.setUpdatedAt(LocalDateTime.now());
         normalizeAvailabilityAndStatus(book);
         return toSummaryResponse(book);
     }
@@ -183,9 +190,6 @@ public class BookServiceImpl implements BookService {
     })
     public void delete(Long id) {
         Book book = getBookOrThrow(id);
-        if (book.isDeleted()) {
-            throw new BusinessException("Sách đã được xóa từ trước");
-        }
 
         boolean hasActiveBorrows = borrowRecordRepository.existsByBookIdAndStatusIn(
                 id,
@@ -197,7 +201,6 @@ public class BookServiceImpl implements BookService {
         book.setDeleted(true);
         book.setStatus(BookStatus.INACTIVE);
         book.setAvailableCopies(0);
-        book.setUpdatedAt(LocalDateTime.now());
         bookRepository.save(book);
     }
 
@@ -208,33 +211,34 @@ public class BookServiceImpl implements BookService {
         @CacheEvict(value = "dashboard", allEntries = true)
     })
     public void restore(Long id) {
-        Book book = getBookOrThrow(id);
-        if (!book.isDeleted()) {
-            throw new BusinessException("Sách chưa bị xóa");
-        }
+        // Cần bypass @SQLRestriction để tìm bản ghi đã xóa
+        Book book = getDeletedBookOrThrow(id);
 
-        // Kiểm tra xem có sách nào khác đang sử dụng ISBN này không
-        if (bookRepository.existsByIsbnAndDeletedFalse(book.getIsbn())) {
+        if (bookRepository.existsByIsbn(book.getIsbn())) {
             throw new BusinessException("Không thể khôi phục vì ISBN của sách này đã tồn tại trên một cuốn sách khác");
         }
 
-        // Kiểm tra nếu các thể loại của sách bị xóa
-        for (Category cat : book.getCategories()) {
-            if (cat.isDeleted()) {
-                throw new BusinessException("Không thể khôi phục sách vì thể loại '" + cat.getName() + "' đã bị xóa tạm thời.");
+        // @SQLRestriction tự lọc: findAllById chỉ trả về category/author còn active.
+        // Nếu category/author bị xóa → không resolve được id → ensureAllIdsResolved báo lỗi.
+        List<Long> categoryIds = book.getCategories().stream().map(Category::getId).toList();
+        List<Long> authorIds   = book.getAuthors().stream().map(Author::getId).toList();
+
+        if (!categoryIds.isEmpty()) {
+            List<Category> activeCategories = categoryRepository.findAllById(categoryIds);
+            if (activeCategories.size() < categoryIds.size()) {
+                throw new BusinessException("Không thể khôi phục sách vì một hoặc nhiều thể loại liên kết đã bị xóa tạm thời.");
             }
         }
-        // Kiểm tra nếu các tác giả của sách bị xóa
-        for (Author auth : book.getAuthors()) {
-            if (auth.isDeleted()) {
-                throw new BusinessException("Không thể khôi phục sách vì tác giả '" + auth.getName() + "' đã bị xóa tạm thời.");
+        if (!authorIds.isEmpty()) {
+            List<Author> activeAuthors = authorRepository.findAllById(authorIds);
+            if (activeAuthors.size() < authorIds.size()) {
+                throw new BusinessException("Không thể khôi phục sách vì một hoặc nhiều tác giả liên kết đã bị xóa tạm thời.");
             }
         }
 
         book.setDeleted(false);
         book.setStatus(BookStatus.AVAILABLE);
         book.setAvailableCopies(book.getTotalCopies());
-        book.setUpdatedAt(LocalDateTime.now());
         bookRepository.save(book);
     }
 
@@ -245,30 +249,42 @@ public class BookServiceImpl implements BookService {
         @CacheEvict(value = "dashboard", allEntries = true)
     })
     public void forceDelete(Long id) {
-        Book book = getBookOrThrow(id);
-        if (!book.isDeleted()) {
-            throw new BusinessException("Sách phải được xóa mềm trước khi xóa vĩnh viễn");
-        }
+        Book book = getDeletedBookOrThrow(id);
 
-        // Kiểm tra xem sách có lịch sử mượn trả không
         if (borrowRecordRepository.existsByBookId(id)) {
             throw new BusinessException("Không thể xóa vĩnh viễn sách vì đã có lịch sử mượn trả");
         }
 
-        // Xóa ảnh bìa trên Cloudinary
-        String currentCoverUrl = book.getCoverImageUrl();
-        String coverPublicId = extractPublicId(currentCoverUrl);
+        String coverPublicId = extractPublicId(book.getCoverImageUrl());
         if (coverPublicId != null && !coverPublicId.isBlank()) {
             cloudinaryService.deleteImage(coverPublicId);
         }
 
-        // Xóa file PDF trên PrivateFileService
         if (book.getFileUrl() != null && !book.getFileUrl().isBlank()) {
             privateFileService.deleteFile(book.getFileUrl());
         }
 
-        // Thực hiện xóa vĩnh viễn
         bookRepository.delete(book);
+    }
+
+    // ---- Helper: lấy book active (bị @SQLRestriction filter, 404 nếu đã xóa) ----
+
+    private Book getBookOrThrow(Long id) {
+        if (id == null) {
+            throw new BusinessException("Id sách không được để trống");
+        }
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book", id));
+    }
+
+    // ---- Helper: lấy book đã xóa (bypass @SQLRestriction bằng native query) ----
+
+    private Book getDeletedBookOrThrow(Long id) {
+        if (id == null) {
+            throw new BusinessException("Id sách không được để trống");
+        }
+        return bookRepository.findByIdDeleted(id)
+                .orElseThrow(() -> new BusinessException("Sách đã xóa không tồn tại hoặc chưa được xóa mềm"));
     }
 
     private void validateCreateRequest(CreateBookRequest request, MultipartFile cover, MultipartFile file) {
@@ -305,14 +321,11 @@ public class BookServiceImpl implements BookService {
             book.getCategories().clear();
             return;
         }
+        // @SQLRestriction đảm bảo findAllById chỉ trả về category còn active.
+        // Nếu id của category đã xóa được truyền vào → không resolve được → ensureAllIdsResolved báo lỗi rõ ràng.
         List<Category> categories = categoryRepository.findAllById(categoryIds);
         ensureAllIdsResolved(categoryIds, categories.stream().map(Category::getId).collect(Collectors.toSet()),
                 "Category");
-        for (Category category : categories) {
-            if (category.isDeleted()) {
-                throw new BusinessException("Không thể liên kết với thể loại đã bị xóa: " + category.getName());
-            }
-        }
         book.setCategories(new HashSet<>(categories));
     }
 
@@ -324,13 +337,9 @@ public class BookServiceImpl implements BookService {
             book.getAuthors().clear();
             return;
         }
+        // Tương tự applyCategories — @SQLRestriction lo phần filter active
         List<Author> authors = authorRepository.findAllById(authorIds);
         ensureAllIdsResolved(authorIds, authors.stream().map(Author::getId).collect(Collectors.toSet()), "Author");
-        for (Author author : authors) {
-            if (author.isDeleted()) {
-                throw new BusinessException("Không thể liên kết với tác giả đã bị xóa: " + author.getName());
-            }
-        }
         book.setAuthors(new HashSet<>(authors));
     }
 
@@ -362,14 +371,6 @@ public class BookServiceImpl implements BookService {
         book.setStatus(book.getAvailableCopies() > 0 ? BookStatus.AVAILABLE : BookStatus.OUT_OF_STOCK);
     }
 
-    private Book getBookOrThrow(Long id) {
-        if (id == null) {
-            throw new BusinessException("Id sách không được để trống");
-        }
-        return bookRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Book", id));
-    }
-
     private BookResponse toListResponse(BookSummaryProjection projection) {
         BookResponse response = new BookResponse();
         response.setId(projection.getId());
@@ -385,8 +386,6 @@ public class BookServiceImpl implements BookService {
         response.setStatus(projection.getStatus());
         response.setCreatedAt(projection.getCreatedAt());
         response.setUpdatedAt(projection.getUpdatedAt());
-        // List view không cần categoryNames/authorNames/avgRating — đã giới hạn từ
-        // query.
         response.setCategoryNames(null);
         response.setAuthorNames(null);
         response.setAvgRating(null);
@@ -423,8 +422,6 @@ public class BookServiceImpl implements BookService {
                 .toList());
         response.setAvgRating(calculateAverageRating(book));
         response.setBorrowCount((long) book.getBorrowRecords().size());
-        // Dùng projection — chỉ SELECT các cột cần của review + user.username, không
-        // load toàn bộ entity.
         response.setReviews(reviewRepository.findProjectedByBookIdAndVisibleTrue(book.getId()).stream()
                 .map(this::toReviewResponse)
                 .sorted(Comparator
