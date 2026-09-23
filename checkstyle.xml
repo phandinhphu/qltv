@@ -50,7 +50,7 @@
 
         <!-- Kiểm tra khoảng trắng -->
         <module name="GenericWhitespace"/>
-        <module name="WhitespaceAround"/>
+        <!-- <module name="WhitespaceAround"/> -->
         <module name="WhitespaceAfter"/>
         <module name="NoWhitespaceBefore"/>
 

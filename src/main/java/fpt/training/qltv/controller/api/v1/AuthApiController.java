@@ -78,7 +78,9 @@ public class AuthApiController {
         LoginResponse res = new LoginResponse();
         res.setAccessToken(accessToken);
         res.setUsername(userDetails.getUsername());
-        if (role.startsWith("ROLE_")) role = role.substring(5);
+        if (role.startsWith("ROLE_")) {
+            role = role.substring(5);
+        }
         res.setRole(role);
         res.setExpiredAt(exp.getTime());
 
@@ -105,7 +107,9 @@ public class AuthApiController {
         LoginResponse res = new LoginResponse();
         res.setAccessToken(accessToken);
         res.setUsername(user.getUsername());
-        if (role.startsWith("ROLE_")) role = role.substring(5);
+        if (role.startsWith("ROLE_")) {
+            role = role.substring(5);
+        }
         res.setRole(role);
         res.setExpiredAt(exp.getTime());
 
