@@ -26,7 +26,8 @@ public class HomeWebController {
         List<CategoryResponse> categories = categoryService.findAll();
 
         model.addAttribute("books", pageData.getContent());
-        model.addAttribute("categories", categories.size() > 5 ? categories.subList(0, 5) : categories);
+        model.addAttribute(
+                "categories", categories.size() > 5 ? categories.subList(0, 5) : categories);
         return "home/index";
     }
 }

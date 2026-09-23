@@ -5,13 +5,11 @@ import org.springframework.data.jpa.domain.Specification;
 
 public final class AuthorSpecification {
 
-    private AuthorSpecification() {
-    }
+    private AuthorSpecification() {}
 
     /**
-     * Xây dựng Specification filter cho Author.
-     * Điều kiện "deleted = false" được @SQLRestriction trên entity lo tự động,
-     * không cần thêm ở đây nữa.
+     * Xây dựng Specification filter cho Author. Điều kiện "deleted = false" được @SQLRestriction
+     * trên entity lo tự động, không cần thêm ở đây nữa.
      */
     public static Specification<Author> of(String name) {
         return hasName(name);

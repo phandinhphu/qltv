@@ -10,5 +10,6 @@ public class CreateAuthorRequest {
 
     @NotBlank(message = "Tên tác giả không được để trống")
     private String name;
+
     private String bio;
 }

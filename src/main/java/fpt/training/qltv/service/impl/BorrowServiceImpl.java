@@ -23,6 +23,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,8 +32,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 
 @Service
 @RequiredArgsConstructor
@@ -44,14 +44,17 @@ public class BorrowServiceImpl implements BorrowService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(evict = {
-        @CacheEvict(value = "books", key = "#bookId"),
-        @CacheEvict(value = "dashboard", allEntries = true)
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = "books", key = "#bookId"),
+                @CacheEvict(value = "dashboard", allEntries = true)
+            })
     public BorrowRecordResponse borrow(Long bookId, Long userId) {
         User user = getUserOrThrow(userId);
-        Book book = bookRepository.findByIdWithLock(bookId)
-            .orElseThrow(() -> new ResourceNotFoundException("Book", bookId));
+        Book book =
+                bookRepository
+                        .findByIdWithLock(bookId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Book", bookId));
 
         if (book.isDeleted()) {
             throw new BusinessException("Sách này đã bị xóa tạm, không thể mượn");
@@ -61,12 +64,14 @@ public class BorrowServiceImpl implements BorrowService {
             throw new BusinessException("Bạn có sách quá hạn chưa trả, không thể mượn thêm");
         }
 
-        long activeBorrowCount = borrowRecordRepository.countByUserIdAndStatus(userId, BorrowStatus.BORROWING);
+        long activeBorrowCount =
+                borrowRecordRepository.countByUserIdAndStatus(userId, BorrowStatus.BORROWING);
         if (activeBorrowCount >= 3) {
             throw new BusinessException("Bạn đang mượn tối đa 3 sách");
         }
 
-        if (borrowRecordRepository.existsByUserIdAndBookIdAndStatus(userId, bookId, BorrowStatus.BORROWING)) {
+        if (borrowRecordRepository.existsByUserIdAndBookIdAndStatus(
+                userId, bookId, BorrowStatus.BORROWING)) {
             throw new BusinessException("Bạn đang mượn sách này rồi");
         }
 
@@ -101,10 +106,11 @@ public class BorrowServiceImpl implements BorrowService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(evict = {
-        @CacheEvict(value = "books", key = "#result.bookId"),
-        @CacheEvict(value = "dashboard", allEntries = true)
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = "books", key = "#result.bookId"),
+                @CacheEvict(value = "dashboard", allEntries = true)
+            })
     public BorrowRecordResponse returnBook(Long borrowId, Long userId) {
         BorrowRecord borrowRecord = getBorrowRecordOrThrow(borrowId);
         if (!borrowRecord.getUser().getId().equals(userId)) {
@@ -115,7 +121,8 @@ public class BorrowServiceImpl implements BorrowService {
             throw new BusinessException("Sách đã được trả");
         }
 
-        if (borrowRecord.getStatus() != BorrowStatus.BORROWING && borrowRecord.getStatus() != BorrowStatus.OVERDUE) {
+        if (borrowRecord.getStatus() != BorrowStatus.BORROWING
+                && borrowRecord.getStatus() != BorrowStatus.OVERDUE) {
             throw new BusinessException("Sách đã được trả");
         }
 
@@ -147,28 +154,40 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<BorrowRecordResponse> getMyBorrows(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "borrowDate"));
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.max(size, 1),
+                        Sort.by(Sort.Direction.DESC, "borrowDate"));
 
-        Page<BorrowRecordResponse> result = borrowRecordRepository
-            .findAllProjected(userId, null, null, null, null, pageable)
-            .map(this::toResponse);
+        Page<BorrowRecordResponse> result =
+                borrowRecordRepository
+                        .findAllProjected(userId, null, null, null, null, pageable)
+                        .map(this::toResponse);
         return PageResponse.of(result);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<BorrowRecordResponse> getAllBorrows(BorrowFilterRequest filter, int page, int size) {
+    public PageResponse<BorrowRecordResponse> getAllBorrows(
+            BorrowFilterRequest filter, int page, int size) {
         BorrowFilterRequest safeFilter = filter == null ? new BorrowFilterRequest() : filter;
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "borrowDate"));
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.max(size, 1),
+                        Sort.by(Sort.Direction.DESC, "borrowDate"));
 
-        Page<BorrowRecordResponse> result = borrowRecordRepository.findAllProjected(
-            safeFilter.getUserId(),
-            safeFilter.getBookId(),
-            safeFilter.getStatus(),
-            safeFilter.getFromDate(),
-            safeFilter.getToDate(),
-            pageable
-        ).map(this::toResponse);
+        Page<BorrowRecordResponse> result =
+                borrowRecordRepository
+                        .findAllProjected(
+                                safeFilter.getUserId(),
+                                safeFilter.getBookId(),
+                                safeFilter.getStatus(),
+                                safeFilter.getFromDate(),
+                                safeFilter.getToDate(),
+                                pageable)
+                        .map(this::toResponse);
         return PageResponse.of(result);
     }
 
@@ -176,22 +195,33 @@ public class BorrowServiceImpl implements BorrowService {
         if (id == null) {
             throw new BusinessException("Id user không được để trống");
         }
-        return userRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        return userRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
     }
 
     private BorrowRecord getBorrowRecordOrThrow(Long id) {
         if (id == null) {
             throw new BusinessException("Id borrow không được để trống");
         }
-        return borrowRecordRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("BorrowRecord", id));
+        // findWithUserAndBookById dùng @EntityGraph(user, book)
+        // → 1 query thay vì 3 (findById + lazy user + lazy book)
+        // user cần để check ownership; book cần để evict cache và incrementAvailableCopies
+        return borrowRecordRepository
+                .findWithUserAndBookById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("BorrowRecord", id));
     }
 
-    private BorrowTokenProjection validateDownloadTokenProjection(String downloadToken, Long userId) {
-        BorrowTokenProjection token = borrowRecordRepository
-            .findByDownloadToken(downloadToken, BorrowTokenProjection.class)
-            .orElseThrow(() -> new ResourceNotFoundException("BorrowRecord not found with download token: " + downloadToken));
+    private BorrowTokenProjection validateDownloadTokenProjection(
+            String downloadToken, Long userId) {
+        BorrowTokenProjection token =
+                borrowRecordRepository
+                        .findByDownloadToken(downloadToken, BorrowTokenProjection.class)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                "BorrowRecord not found with download token: "
+                                                        + downloadToken));
 
         if (!token.getUser().getId().equals(userId)) {
             throw new FileAccessDeniedException("Bạn không có quyền tải file này");
@@ -201,7 +231,8 @@ public class BorrowServiceImpl implements BorrowService {
             throw new FileAccessDeniedException("Sách đã được trả");
         }
 
-        if (token.getTokenExpiredAt() == null || !token.getTokenExpiredAt().isAfter(LocalDateTime.now())) {
+        if (token.getTokenExpiredAt() == null
+                || !token.getTokenExpiredAt().isAfter(LocalDateTime.now())) {
             throw new FileAccessDeniedException("Token đã hết hạn");
         }
 
@@ -230,15 +261,21 @@ public class BorrowServiceImpl implements BorrowService {
         response.setTokenExpiredAt(borrowRecord.getTokenExpiredAt());
 
         LocalDateTime now = LocalDateTime.now();
-        response.setDaysRemaining(borrowRecord.getDueDate() == null ? null : (int) ChronoUnit.DAYS.between(now.toLocalDate(), borrowRecord.getDueDate().toLocalDate()));
+        response.setDaysRemaining(
+                borrowRecord.getDueDate() == null
+                        ? null
+                        : (int)
+                                ChronoUnit.DAYS.between(
+                                        now.toLocalDate(),
+                                        borrowRecord.getDueDate().toLocalDate()));
         response.setHasValidToken(
-            borrowRecord.getStatus() == BorrowStatus.BORROWING
-                && borrowRecord.getDownloadToken() != null
-                && borrowRecord.getTokenExpiredAt() != null
-                && borrowRecord.getTokenExpiredAt().isAfter(now)
-        );
-        response.setHasFile(borrowRecord.getBook().getFileUrl() != null
-            && !borrowRecord.getBook().getFileUrl().isBlank());
+                borrowRecord.getStatus() == BorrowStatus.BORROWING
+                        && borrowRecord.getDownloadToken() != null
+                        && borrowRecord.getTokenExpiredAt() != null
+                        && borrowRecord.getTokenExpiredAt().isAfter(now));
+        response.setHasFile(
+                borrowRecord.getBook().getFileUrl() != null
+                        && !borrowRecord.getBook().getFileUrl().isBlank());
         return response;
     }
 
@@ -257,24 +294,28 @@ public class BorrowServiceImpl implements BorrowService {
         response.setTokenExpiredAt(projection.getTokenExpiredAt());
 
         LocalDateTime now = LocalDateTime.now();
-        response.setDaysRemaining(projection.getDueDate() == null ? null
-            : (int) ChronoUnit.DAYS.between(now.toLocalDate(), projection.getDueDate().toLocalDate()));
+        response.setDaysRemaining(
+                projection.getDueDate() == null
+                        ? null
+                        : (int)
+                                ChronoUnit.DAYS.between(
+                                        now.toLocalDate(), projection.getDueDate().toLocalDate()));
         response.setHasValidToken(
-            projection.getStatus() == BorrowStatus.BORROWING
-                && projection.getDownloadToken() != null
-                && projection.getTokenExpiredAt() != null
-                && projection.getTokenExpiredAt().isAfter(now)
-        );
-        response.setHasFile(projection.getBookFileUrl() != null
-            && !projection.getBookFileUrl().isBlank());
+                projection.getStatus() == BorrowStatus.BORROWING
+                        && projection.getDownloadToken() != null
+                        && projection.getTokenExpiredAt() != null
+                        && projection.getTokenExpiredAt().isAfter(now));
+        response.setHasFile(
+                projection.getBookFileUrl() != null && !projection.getBookFileUrl().isBlank());
         return response;
     }
 
     @Override
     public List<BorrowRecordResponse> findByUserIdAndBookId(Long userId, Long bookId) {
-        List<BorrowRecord> borrowRecords = borrowRecordRepository.findByUserIdAndBookId(userId, bookId);
-        return borrowRecords.stream()
-            .map(this::toResponse)
-            .toList();
+        // findByUserIdAndBookIdFetched dùng JOIN FETCH user và book
+        // → 1 query thay vì 1 + N×2 lazy queries khi toResponse() truy cập user/book
+        return borrowRecordRepository.findByUserIdAndBookIdFetched(userId, bookId).stream()
+                .map(this::toResponse)
+                .toList();
     }
 }

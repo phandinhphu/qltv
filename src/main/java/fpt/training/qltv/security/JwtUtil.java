@@ -43,12 +43,12 @@ public class JwtUtil {
         Date expiry = new Date(now.getTime() + 1000L * 60 * 60 * 24); // 24 hours
 
         return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(username)
-            .setIssuedAt(now)
-            .setExpiration(expiry)
-            .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-            .compact();
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -58,10 +58,10 @@ public class JwtUtil {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-            .setSigningKey(getSigningKey())
-            .build()
-            .parseClaimsJws(token)
-            .getBody();
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public String extractUsername(String token) {

@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 
 /**
- * Constructor-based DTO dùng với {@code SELECT NEW} trong JPQL query.
- * Dùng Option B vì BorrowRecord cần JOIN 2 bảng (users, books) với nhiều field cross-table.
- * Thứ tự và kiểu tham số trong constructor phải khớp chính xác với query JPQL.
+ * Constructor-based DTO dùng với {@code SELECT NEW} trong JPQL query. Dùng Option B vì BorrowRecord
+ * cần JOIN 2 bảng (users, books) với nhiều field cross-table. Thứ tự và kiểu tham số trong
+ * constructor phải khớp chính xác với query JPQL.
  */
 @Getter
 public class BorrowRecordProjection {

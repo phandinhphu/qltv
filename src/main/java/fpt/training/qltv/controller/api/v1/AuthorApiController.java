@@ -1,9 +1,9 @@
 package fpt.training.qltv.controller.api.v1;
 
+import fpt.training.qltv.dto.paginate.PageResponse;
 import fpt.training.qltv.dto.request.AuthorFilterRequest;
 import fpt.training.qltv.dto.request.CreateAuthorRequest;
 import fpt.training.qltv.dto.request.UpdateAuthorRequest;
-import fpt.training.qltv.dto.paginate.PageResponse;
 import fpt.training.qltv.dto.response.ApiResponse;
 import fpt.training.qltv.dto.response.AuthorResponse;
 import fpt.training.qltv.mapper.PageResponseMapper;
@@ -37,8 +37,8 @@ public class AuthorApiController {
             @ModelAttribute AuthorFilterRequest filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PageResponse<AuthorResponse> pageResponse = PageResponseMapper.from(
-                authorService.findAll(filter, page, size));
+        PageResponse<AuthorResponse> pageResponse =
+                PageResponseMapper.from(authorService.findAll(filter, page, size));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
@@ -47,8 +47,8 @@ public class AuthorApiController {
     public ResponseEntity<ApiResponse<PageResponse<AuthorResponse>>> findAllDeleted(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PageResponse<AuthorResponse> pageResponse = PageResponseMapper.from(
-                authorService.findAllDeleted(page, size));
+        PageResponse<AuthorResponse> pageResponse =
+                PageResponseMapper.from(authorService.findAllDeleted(page, size));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
@@ -63,7 +63,9 @@ public class AuthorApiController {
             @Valid @ModelAttribute CreateAuthorRequest request,
             @RequestParam(required = false) MultipartFile avatar) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(authorService.create(request, avatar), "Tạo tác giả thành công"));
+                .body(
+                        ApiResponse.success(
+                                authorService.create(request, avatar), "Tạo tác giả thành công"));
     }
 
     @PutMapping("/{id}")
@@ -72,8 +74,9 @@ public class AuthorApiController {
             @PathVariable Long id,
             @Valid @ModelAttribute UpdateAuthorRequest request,
             @RequestParam(required = false) MultipartFile avatar) {
-        return ResponseEntity
-                .ok(ApiResponse.success(authorService.update(id, request, avatar), "Cập nhật tác giả thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        authorService.update(id, request, avatar), "Cập nhật tác giả thành công"));
     }
 
     @DeleteMapping("/{id}")
@@ -94,6 +97,7 @@ public class AuthorApiController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> forceDelete(@PathVariable Long id) {
         authorService.forceDelete(id);
-        return ResponseEntity.ok(ApiResponse.successWithoutData("Xóa vĩnh viễn tác giả thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.successWithoutData("Xóa vĩnh viễn tác giả thành công"));
     }
 }

@@ -8,7 +8,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface AuthorRepository extends JpaRepository<Author, Long>, JpaSpecificationExecutor<Author> {
+public interface AuthorRepository
+        extends JpaRepository<Author, Long>, JpaSpecificationExecutor<Author> {
 
     // Tự động chỉ tìm active (nhờ @SQLRestriction)
     boolean existsByName(String name);
@@ -17,14 +18,19 @@ public interface AuthorRepository extends JpaRepository<Author, Long>, JpaSpecif
 
     // ---- Trash bin queries (bypass @SQLRestriction bằng native SQL) ----
 
-    @Query(value = "SELECT * FROM authors WHERE deleted = true ORDER BY updated_at DESC", nativeQuery = true)
+    @Query(
+            value = "SELECT * FROM authors WHERE deleted = true ORDER BY updated_at DESC",
+            nativeQuery = true)
     List<Author> findAllDeleted();
 
     @Query(value = "SELECT * FROM authors WHERE id = :id AND deleted = true", nativeQuery = true)
     Optional<Author> findByIdDeleted(@Param("id") Long id);
 
-    @Query(value = "SELECT COUNT(*) FROM book_authors ba " +
-                   "JOIN books b ON ba.book_id = b.id " +
-                   "WHERE ba.author_id = :authorId AND b.deleted = false", nativeQuery = true)
+    @Query(
+            value =
+                    "SELECT COUNT(*) FROM book_authors ba "
+                            + "JOIN books b ON ba.book_id = b.id "
+                            + "WHERE ba.author_id = :authorId AND b.deleted = false",
+            nativeQuery = true)
     long countActiveBooksByAuthorId(@Param("authorId") Long authorId);
 }

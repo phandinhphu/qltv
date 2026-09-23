@@ -37,19 +37,22 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(FileAccessDeniedException.class)
-    public ResponseEntity<ApiResponse<Object>> handleFileAccessDenied(FileAccessDeniedException ex) {
+    public ResponseEntity<ApiResponse<Object>> handleFileAccessDenied(
+            FileAccessDeniedException ex) {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage(), null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Object>> handleValidation(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
-            .collect(Collectors.toMap(
-                FieldError::getField,
-                FieldError::getDefaultMessage,
-                (existing, replacement) -> existing,
-                LinkedHashMap::new
-            ));
+    public ResponseEntity<ApiResponse<Object>> handleValidation(
+            MethodArgumentNotValidException ex) {
+        Map<String, String> errors =
+                ex.getBindingResult().getFieldErrors().stream()
+                        .collect(
+                                Collectors.toMap(
+                                        FieldError::getField,
+                                        FieldError::getDefaultMessage,
+                                        (existing, replacement) -> existing,
+                                        LinkedHashMap::new));
         return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Dữ liệu không hợp lệ", errors);
     }
 
@@ -65,13 +68,16 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneral(Exception ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi hệ thống, vui lòng thử lại sau", null);
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi hệ thống, vui lòng thử lại sau", null);
     }
 
-    private ResponseEntity<ApiResponse<Object>> buildResponse(HttpStatus status, String message, Object errors) {
-        ApiResponse<Object> body = errors == null
-            ? ApiResponse.failure(message)
-            : new ApiResponse<>(false, message, errors);
+    private ResponseEntity<ApiResponse<Object>> buildResponse(
+            HttpStatus status, String message, Object errors) {
+        ApiResponse<Object> body =
+                errors == null
+                        ? ApiResponse.failure(message)
+                        : new ApiResponse<>(false, message, errors);
         return ResponseEntity.status(status).body(body);
     }
 }

@@ -15,6 +15,7 @@ public class UpdateProfileRequest {
     @Pattern(regexp = ".*\\S.*", message = "Email không được để trống")
     @Email(message = "Email không hợp lệ")
     private String email;
+
     private String currentPassword;
     private String newPassword;
     private String confirmPassword;

@@ -46,14 +46,17 @@ public class AuthorServiceImpl implements AuthorService {
     @Transactional(readOnly = true)
     public PageResponse<AuthorResponse> findAll(AuthorFilterRequest filter, int page, int size) {
         AuthorFilterRequest safeFilter = filter == null ? new AuthorFilterRequest() : filter;
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.max(size, 1),
+                        Sort.by(Sort.Direction.DESC, "createdAt"));
         // @SQLRestriction tự động thêm "deleted = false" — không cần truyền tham số deleted nữa
         Specification<Author> specification = AuthorSpecification.of(safeFilter.getName());
 
-        Page<AuthorSummaryProjection> result = authorRepository.findBy(specification, q -> q
-            .as(AuthorSummaryProjection.class)
-            .page(pageable)
-        );
+        Page<AuthorSummaryProjection> result =
+                authorRepository.findBy(
+                        specification, q -> q.as(AuthorSummaryProjection.class).page(pageable));
 
         return PageResponse.of(result.map(this::toResponse));
     }
@@ -61,13 +64,18 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<AuthorResponse> findAllDeleted(int page, int size) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "updatedAt"));
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.max(size, 1),
+                        Sort.by(Sort.Direction.DESC, "updatedAt"));
         // Native query bypass @SQLRestriction để lấy trash bin
         List<Author> deletedAuthors = authorRepository.findAllDeleted();
         // Thực hiện phân trang thủ công trên kết quả native query
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), deletedAuthors.size());
-        List<Author> pageContent = start >= deletedAuthors.size() ? List.of() : deletedAuthors.subList(start, end);
+        List<Author> pageContent =
+                start >= deletedAuthors.size() ? List.of() : deletedAuthors.subList(start, end);
         Page<Author> result = new PageImpl<>(pageContent, pageable, deletedAuthors.size());
         return PageResponse.of(result.map(this::toResponse));
     }
@@ -127,10 +135,12 @@ public class AuthorServiceImpl implements AuthorService {
     @CacheEvict(value = "authors", key = "#id")
     public void delete(Long id) {
         Author author = getAuthorOrThrow(id);
-        // Dùng native query đếm sách active — không bị ảnh hưởng bởi @SQLRestriction trên collection
+        // Dùng native query đếm sách active — không bị ảnh hưởng bởi @SQLRestriction trên
+        // collection
         long activeBookCount = authorRepository.countActiveBooksByAuthorId(id);
         if (activeBookCount > 0) {
-            throw new BusinessException("Không thể xóa tác giả vì vẫn còn sách đang hoạt động liên kết với tác giả này");
+            throw new BusinessException(
+                    "Không thể xóa tác giả vì vẫn còn sách đang hoạt động liên kết với tác giả này");
         }
         author.setDeleted(true);
         authorRepository.save(author);
@@ -143,7 +153,8 @@ public class AuthorServiceImpl implements AuthorService {
         // Cần bypass @SQLRestriction để tìm bản ghi đã xóa
         Author author = getDeletedAuthorOrThrow(id);
         if (authorRepository.existsByName(author.getName())) {
-            throw new BusinessException("Không thể khôi phục vì tên tác giả này đã được sử dụng bởi một tác giả khác");
+            throw new BusinessException(
+                    "Không thể khôi phục vì tên tác giả này đã được sử dụng bởi một tác giả khác");
         }
         author.setDeleted(false);
         authorRepository.save(author);
@@ -157,7 +168,8 @@ public class AuthorServiceImpl implements AuthorService {
         // Kiểm tra sách liên kết bằng native query (bao gồm cả sách đã xóa mềm)
         long totalBookCount = authorRepository.countActiveBooksByAuthorId(id);
         if (totalBookCount > 0) {
-            throw new BusinessException("Không thể xóa vĩnh viễn tác giả vì vẫn còn sách liên kết (kể cả sách đã xóa mềm)");
+            throw new BusinessException(
+                    "Không thể xóa vĩnh viễn tác giả vì vẫn còn sách liên kết (kể cả sách đã xóa mềm)");
         }
         String currentAvatarUrl = author.getAvatarUrl();
         String publicId = extractPublicId(currentAvatarUrl);
@@ -173,8 +185,9 @@ public class AuthorServiceImpl implements AuthorService {
         if (id == null) {
             throw new BusinessException("Id tác giả không được để trống");
         }
-        return authorRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Author", id));
+        return authorRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Author", id));
     }
 
     // ---- Helper: lấy author đã xóa (bypass @SQLRestriction bằng native query) ----
@@ -183,18 +196,27 @@ public class AuthorServiceImpl implements AuthorService {
         if (id == null) {
             throw new BusinessException("Id tác giả không được để trống");
         }
-        return authorRepository.findByIdDeleted(id)
-            .orElseThrow(() -> new BusinessException("Tác giả đã xóa không tồn tại hoặc chưa được xóa mềm"));
+        return authorRepository
+                .findByIdDeleted(id)
+                .orElseThrow(
+                        () ->
+                                new BusinessException(
+                                        "Tác giả đã xóa không tồn tại hoặc chưa được xóa mềm"));
     }
 
     private void ensureNameUnique(String name, Long excludedAuthorId) {
         String trimmedName = name.trim();
-        authorRepository.findByName(trimmedName).ifPresent(existing -> {
-            if (!existing.getId().equals(excludedAuthorId)) {
-                // findByName đã chỉ tìm active (nhờ @SQLRestriction) nên không cần check isDeleted()
-                throw new BusinessException("Tác giả đã tồn tại với tên: " + trimmedName);
-            }
-        });
+        authorRepository
+                .findByName(trimmedName)
+                .ifPresent(
+                        existing -> {
+                            if (!existing.getId().equals(excludedAuthorId)) {
+                                // findByName đã chỉ tìm active (nhờ @SQLRestriction) nên không cần
+                                // check isDeleted()
+                                throw new BusinessException(
+                                        "Tác giả đã tồn tại với tên: " + trimmedName);
+                            }
+                        });
     }
 
     private void validateAvatar(MultipartFile avatar) {
@@ -204,7 +226,10 @@ public class AuthorServiceImpl implements AuthorService {
         if (avatar.getSize() > MAX_AVATAR_SIZE) {
             throw new FileUploadException("Ảnh tác giả không được vượt quá 5MB");
         }
-        String contentType = avatar.getContentType() == null ? "" : avatar.getContentType().trim().toLowerCase(Locale.ROOT);
+        String contentType =
+                avatar.getContentType() == null
+                        ? ""
+                        : avatar.getContentType().trim().toLowerCase(Locale.ROOT);
         if (!IMAGE_TYPES.contains(contentType)) {
             throw new FileUploadException("Ảnh tác giả chỉ chấp nhận JPG, PNG, WEBP");
         }
@@ -229,7 +254,9 @@ public class AuthorServiceImpl implements AuthorService {
             if (trimmed.startsWith("/")) {
                 trimmed = trimmed.substring(1);
             }
-            if (trimmed.startsWith("v") && trimmed.length() > 1 && Character.isDigit(trimmed.charAt(1))) {
+            if (trimmed.startsWith("v")
+                    && trimmed.length() > 1
+                    && Character.isDigit(trimmed.charAt(1))) {
                 int slashIndex = trimmed.indexOf('/');
                 if (slashIndex > 0) {
                     trimmed = trimmed.substring(slashIndex + 1);

@@ -10,7 +10,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecificationExecutor<Review> {
+public interface ReviewRepository
+        extends JpaRepository<Review, Long>, JpaSpecificationExecutor<Review> {
 
     boolean existsByUserIdAndBookId(Long userId, Long bookId);
 

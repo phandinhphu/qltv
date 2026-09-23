@@ -15,6 +15,7 @@ public class CreateBookRequest {
 
     @NotBlank(message = "ISBN không được để trống")
     private String isbn;
+
     private String description;
     private Integer publishYear;
     private String language;

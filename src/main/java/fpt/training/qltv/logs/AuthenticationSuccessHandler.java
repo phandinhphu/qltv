@@ -1,15 +1,13 @@
 package fpt.training.qltv.logs;
 
-import java.io.IOException;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
-import org.springframework.stereotype.Component;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
@@ -17,9 +15,7 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
 
     @Override
     public void onAuthenticationSuccess(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication authentication)
+            HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
 
         log.info(
@@ -27,10 +23,6 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
                 authentication.getName(),
                 request.getRemoteAddr());
 
-        super.onAuthenticationSuccess(
-                request,
-                response,
-                authentication);
+        super.onAuthenticationSuccess(request, response, authentication);
     }
-
 }

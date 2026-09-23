@@ -1,9 +1,9 @@
 package fpt.training.qltv.controller.api.v1;
 
+import fpt.training.qltv.dto.paginate.PageResponse;
 import fpt.training.qltv.dto.request.BookFilterRequest;
 import fpt.training.qltv.dto.request.CreateBookRequest;
 import fpt.training.qltv.dto.request.UpdateBookRequest;
-import fpt.training.qltv.dto.paginate.PageResponse;
 import fpt.training.qltv.dto.response.ApiResponse;
 import fpt.training.qltv.dto.response.BookDetailResponse;
 import fpt.training.qltv.dto.response.BookResponse;
@@ -38,8 +38,8 @@ public class BookApiController {
             @ModelAttribute BookFilterRequest filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PageResponse<BookResponse> pageResponse = PageResponseMapper.from(
-                bookService.findAll(filter, page, size));
+        PageResponse<BookResponse> pageResponse =
+                PageResponseMapper.from(bookService.findAll(filter, page, size));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
@@ -48,8 +48,8 @@ public class BookApiController {
     public ResponseEntity<ApiResponse<PageResponse<BookResponse>>> findAllDeleted(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PageResponse<BookResponse> pageResponse = PageResponseMapper.from(
-                bookService.findAllDeleted(page, size));
+        PageResponse<BookResponse> pageResponse =
+                PageResponseMapper.from(bookService.findAllDeleted(page, size));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
@@ -65,7 +65,9 @@ public class BookApiController {
             @RequestParam(required = false) MultipartFile cover,
             @RequestParam(required = false) MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(bookService.create(request, cover, file), "Tạo sách thành công"));
+                .body(
+                        ApiResponse.success(
+                                bookService.create(request, cover, file), "Tạo sách thành công"));
     }
 
     @PutMapping("/{id}")
@@ -75,8 +77,9 @@ public class BookApiController {
             @Valid @ModelAttribute UpdateBookRequest request,
             @RequestParam(required = false) MultipartFile cover,
             @RequestParam(required = false) MultipartFile file) {
-        return ResponseEntity
-                .ok(ApiResponse.success(bookService.update(id, request, cover, file), "Cập nhật sách thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        bookService.update(id, request, cover, file), "Cập nhật sách thành công"));
     }
 
     @DeleteMapping("/{id}")

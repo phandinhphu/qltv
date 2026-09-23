@@ -18,14 +18,19 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     // ---- Trash bin queries (bypass @SQLRestriction bằng native SQL) ----
 
-    @Query(value = "SELECT * FROM categories WHERE deleted = true ORDER BY updated_at DESC", nativeQuery = true)
+    @Query(
+            value = "SELECT * FROM categories WHERE deleted = true ORDER BY updated_at DESC",
+            nativeQuery = true)
     List<Category> findAllDeleted();
 
     @Query(value = "SELECT * FROM categories WHERE id = :id AND deleted = true", nativeQuery = true)
     Optional<Category> findByIdDeleted(@Param("id") Long id);
 
-    @Query(value = "SELECT COUNT(*) FROM book_categories bc " +
-                   "JOIN books b ON bc.book_id = b.id " +
-                   "WHERE bc.category_id = :categoryId AND b.deleted = false", nativeQuery = true)
+    @Query(
+            value =
+                    "SELECT COUNT(*) FROM book_categories bc "
+                            + "JOIN books b ON bc.book_id = b.id "
+                            + "WHERE bc.category_id = :categoryId AND b.deleted = false",
+            nativeQuery = true)
     long countActiveBooksByCategoryId(@Param("categoryId") Long categoryId);
 }

@@ -15,12 +15,12 @@ import fpt.training.qltv.service.BookService;
 import fpt.training.qltv.service.BorrowService;
 import fpt.training.qltv.service.CategoryService;
 import fpt.training.qltv.service.ReviewService;
+import jakarta.validation.Valid;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -44,9 +44,10 @@ public class BookWebController {
     private final ReviewService reviewService;
 
     @GetMapping
-    public String findAll(@ModelAttribute BookFilterRequest filter,
-                          @RequestParam(defaultValue = "0") int page,
-                          Model model) {
+    public String findAll(
+            @ModelAttribute BookFilterRequest filter,
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
         PageResponse<BookResponse> pageData = bookService.findAll(filter, page, 12);
         List<CategoryResponse> categories = categoryService.findAll();
 
@@ -60,7 +61,8 @@ public class BookWebController {
     @GetMapping("/{id}")
     public String findById(@PathVariable Long id, Model model) {
         BookDetailResponse book = bookService.findById(id);
-        List<ReviewResponse> reviews = book.getReviews() != null ? book.getReviews() : Collections.emptyList();
+        List<ReviewResponse> reviews =
+                book.getReviews() != null ? book.getReviews() : Collections.emptyList();
         Long userId = getCurrentUserId();
         ReviewResponse myReview = reviewService.getMyReview(userId, id);
         BorrowRecordResponse activeBorrow = getActiveBorrow(userId, id);
@@ -69,16 +71,18 @@ public class BookWebController {
         model.addAttribute("reviews", reviews);
         model.addAttribute("userBorrowStatus", hasBorrowedBook(book.getId()));
         model.addAttribute("canRead", activeBorrow != null);
-        model.addAttribute("downloadToken", activeBorrow != null ? activeBorrow.getDownloadToken() : null);
+        model.addAttribute(
+                "downloadToken", activeBorrow != null ? activeBorrow.getDownloadToken() : null);
         model.addAttribute("currentUserId", userId);
         model.addAttribute("myReview", myReview);
         return "book/detail";
     }
 
     @PostMapping("/{id}/reviews")
-    public String submitReview(@PathVariable Long id,
-                               @Valid @ModelAttribute CreateReviewRequest request,
-                               RedirectAttributes redirectAttributes) {
+    public String submitReview(
+            @PathVariable Long id,
+            @Valid @ModelAttribute CreateReviewRequest request,
+            RedirectAttributes redirectAttributes) {
         Long userId = getCurrentUserId();
         if (userId == null) {
             return "redirect:/login";
@@ -141,16 +145,17 @@ public class BookWebController {
         }
 
         return borrows.stream()
-            .filter(borrow -> borrow.getStatus() == BorrowStatus.BORROWING)
-            .filter(BorrowRecordResponse::isHasValidToken)
-            .filter(BorrowRecordResponse::isHasFile)
-            .findFirst()
-            .orElse(null);
+                .filter(borrow -> borrow.getStatus() == BorrowStatus.BORROWING)
+                .filter(BorrowRecordResponse::isHasValidToken)
+                .filter(BorrowRecordResponse::isHasFile)
+                .findFirst()
+                .orElse(null);
     }
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
             return null;
         }
         return userDetails.getId();

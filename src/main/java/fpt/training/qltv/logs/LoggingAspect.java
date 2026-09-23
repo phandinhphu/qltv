@@ -1,14 +1,13 @@
 package fpt.training.qltv.logs;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Aspect
@@ -17,7 +16,8 @@ public class LoggingAspect {
 
     @Around("execution(* fpt.training.qltv.controller..*(..))")
     public Object logMethodExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes attributes =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
         HttpServletRequest request = attributes.getRequest();
 
@@ -42,5 +42,4 @@ public class LoggingAspect {
                     executionTime);
         }
     }
-
 }

@@ -6,9 +6,9 @@ import fpt.training.qltv.dto.response.UserResponse;
 import fpt.training.qltv.exception.common.BusinessException;
 import fpt.training.qltv.security.CustomUserDetails;
 import fpt.training.qltv.service.UserService;
-import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,19 +28,23 @@ public class ProfileApiController {
     @GetMapping
     public ResponseEntity<ApiResponse<UserResponse>> getProfile() {
         Long userId = getCurrentUserId();
-        return ResponseEntity.ok(ApiResponse.success(userService.getCurrentUser(userId), "Thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.getCurrentUser(userId), "Thành công"));
     }
 
     @PutMapping
     public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
             @Valid @NotNull @RequestBody UpdateProfileRequest request) {
         Long userId = getCurrentUserId();
-        return ResponseEntity.ok(ApiResponse.success(userService.updateProfile(userId, request), "Cập nhật hồ sơ thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        userService.updateProfile(userId, request), "Cập nhật hồ sơ thành công"));
     }
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
             throw new BusinessException("Không tìm thấy thông tin người dùng đăng nhập");
         }
         return userDetails.getId();

@@ -10,10 +10,10 @@ import fpt.training.qltv.entity.BookStatus;
 import fpt.training.qltv.service.AuthorService;
 import fpt.training.qltv.service.BookService;
 import fpt.training.qltv.service.CategoryService;
+import jakarta.validation.Valid;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,9 +35,10 @@ public class AdminBookWebController {
     private final AuthorService authorService;
 
     @GetMapping
-    public String index(@ModelAttribute BookFilterRequest filter,
-                        @RequestParam(defaultValue = "0") int page,
-                        Model model) {
+    public String index(
+            @ModelAttribute BookFilterRequest filter,
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
         PageResponse<BookResponse> pageData = bookService.findAll(filter, page, 10);
         model.addAttribute("pageData", pageData);
         model.addAttribute("filter", filter);
@@ -56,10 +57,11 @@ public class AdminBookWebController {
     }
 
     @PostMapping
-    public String create(@Valid @ModelAttribute CreateBookRequest request,
-                         @RequestParam(required = false) MultipartFile cover,
-                         @RequestParam(required = false) MultipartFile file,
-                         RedirectAttributes redirectAttributes) {
+    public String create(
+            @Valid @ModelAttribute CreateBookRequest request,
+            @RequestParam(required = false) MultipartFile cover,
+            @RequestParam(required = false) MultipartFile file,
+            RedirectAttributes redirectAttributes) {
         try {
             bookService.create(request, cover, file);
             redirectAttributes.addFlashAttribute("successMessage", "Tạo sách thành công");
@@ -91,11 +93,12 @@ public class AdminBookWebController {
     }
 
     @PostMapping("/{id}")
-    public String update(@PathVariable Long id,
-                         @Valid @ModelAttribute UpdateBookRequest request,
-                         @RequestParam(required = false) MultipartFile cover,
-                         @RequestParam(required = false) MultipartFile file,
-                         RedirectAttributes redirectAttributes) {
+    public String update(
+            @PathVariable Long id,
+            @Valid @ModelAttribute UpdateBookRequest request,
+            @RequestParam(required = false) MultipartFile cover,
+            @RequestParam(required = false) MultipartFile file,
+            RedirectAttributes redirectAttributes) {
         try {
             bookService.update(id, request, cover, file);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật sách thành công");

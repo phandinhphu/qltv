@@ -6,13 +6,11 @@ import org.springframework.data.jpa.domain.Specification;
 
 public final class BookSpecification {
 
-    private BookSpecification() {
-    }
+    private BookSpecification() {}
 
     /**
-     * Xây dựng Specification filter cho Book.
-     * Điều kiện "deleted = false" được @SQLRestriction trên entity lo tự động,
-     * không cần thêm ở đây nữa.
+     * Xây dựng Specification filter cho Book. Điều kiện "deleted = false" được @SQLRestriction trên
+     * entity lo tự động, không cần thêm ở đây nữa.
      */
     public static Specification<Book> of(
             String title,

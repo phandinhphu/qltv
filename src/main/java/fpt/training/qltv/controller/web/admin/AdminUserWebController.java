@@ -33,7 +33,8 @@ public class AdminUserWebController {
     public String toggleActive(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             userService.toggleActive(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái tài khoản thành công");
+            redirectAttributes.addFlashAttribute(
+                    "successMessage", "Cập nhật trạng thái tài khoản thành công");
         } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }

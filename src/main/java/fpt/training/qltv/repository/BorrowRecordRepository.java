@@ -7,15 +7,17 @@ import fpt.training.qltv.repository.projection.BorrowTokenProjection;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long>, JpaSpecificationExecutor<BorrowRecord> {
+public interface BorrowRecordRepository
+        extends JpaRepository<BorrowRecord, Long>, JpaSpecificationExecutor<BorrowRecord> {
 
     Optional<BorrowRecord> findByDownloadToken(String downloadToken);
 
@@ -33,39 +35,49 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
 
     long countByStatus(BorrowStatus status);
 
-    @Query("""
-        select br
-        from BorrowRecord br
-        where br.status = fpt.training.qltv.entity.BorrowStatus.BORROWING
-          and br.dueDate < :now
-        """)
+    @Query(
+            """
+      select br
+      from BorrowRecord br
+      where br.status = fpt.training.qltv.entity.BorrowStatus.BORROWING
+        and br.dueDate < :now
+      """)
     List<BorrowRecord> findOverdueRecords(@Param("now") LocalDateTime now);
 
     @Modifying
-    @Query("""
-        update BorrowRecord br
-        set br.status = fpt.training.qltv.entity.BorrowStatus.OVERDUE
-        where br.status = fpt.training.qltv.entity.BorrowStatus.BORROWING
-          and br.dueDate < :now
-        """)
+    @Query(
+            """
+      update BorrowRecord br
+      set br.status = fpt.training.qltv.entity.BorrowStatus.OVERDUE
+      where br.status = fpt.training.qltv.entity.BorrowStatus.BORROWING
+        and br.dueDate < :now
+      """)
     int markOverdue(@Param("now") LocalDateTime now);
 
-    @Query("""
-        select count(br)
-        from BorrowRecord br
-        where br.status = fpt.training.qltv.entity.BorrowStatus.BORROWING
-        """)
+    @Query(
+            """
+      select count(br)
+      from BorrowRecord br
+      where br.status = fpt.training.qltv.entity.BorrowStatus.BORROWING
+      """)
     long countActiveBorrows();
 
-    @Query("""
-      select br.book
+    /**
+     * Trả về List<Long> (book IDs) sắp xếp theo số lần mượn giảm dần. Tách riêng aggregate query —
+     * tránh xung đột HHH90003004 khi dùng JOIN FETCH cùng Pageable. DashboardServiceImpl sẽ dùng ID
+     * list này để load Book đầy đủ qua BookRepository.findAllByIdIn (@EntityGraph).
+     */
+    @Query(
+            """
+      select br.book.id
       from BorrowRecord br
-      group by br.book
+      group by br.book.id
       order by count(br) desc
       """)
-    List<fpt.training.qltv.entity.Book> findTopBorrowedBooks(Pageable pageable);
+    List<Long> findTopBorrowedBookIds(Pageable pageable);
 
-    @Query("""
+    @Query(
+            """
       select function('date_format', br.borrowDate, '%Y-%m'), count(br)
       from BorrowRecord br
       where br.borrowDate >= :fromDate
@@ -74,55 +86,77 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
       """)
     List<Object[]> countBorrowByMonth(@Param("fromDate") LocalDateTime fromDate);
 
-    List<BorrowRecord> findByUserIdAndBookId(Long userId, Long bookId);
+    /**
+     * Dùng JOIN FETCH để load user và book trong cùng 1 query. Tránh N+1 khi toResponse() truy cập
+     * borrowRecord.getUser() / getBook().
+     */
+    @Query(
+            """
+      select br from BorrowRecord br
+      join fetch br.user u
+      join fetch br.book b
+      where br.user.id = :userId and br.book.id = :bookId
+      """)
+    List<BorrowRecord> findByUserIdAndBookIdFetched(
+            @Param("userId") Long userId, @Param("bookId") Long bookId);
 
     /**
-     * Trả về danh sách borrow record với projection (SELECT NEW) — flatten cross-table fields
-     * từ user (username) và book (title, fileUrl) thành một object phẳng.
-     * Thay thế Specification-based findAll cho các query read-only list/page.
-     * Các tham số null được bỏ qua (optional filter).
+     * Load BorrowRecord kèm user và book trong 1 query (dùng cho returnBook). Tránh 2 lazy query
+     * phụ khi service truy cập getUser().getId() và getBook().getId() để check ownership và evict
+     * cache.
      */
-    @Query(value = """
-        select new fpt.training.qltv.repository.projection.BorrowRecordProjection(
-            br.id,
-            br.user.id,
-            u.username,
-            br.book.id,
-            b.title,
-            b.fileUrl,
-            br.borrowDate,
-            br.dueDate,
-            br.returnDate,
-            br.status,
-            br.downloadToken,
-            br.tokenExpiredAt
-        )
-        from BorrowRecord br
-        join br.user u
-        join br.book b
-        where (:userId is null or br.user.id = :userId)
-          and (:bookId is null or br.book.id = :bookId)
-          and (:status is null or br.status = :status)
-          and (:fromDate is null or br.borrowDate >= :fromDate)
-          and (:toDate is null or br.borrowDate <= :toDate)
-        """,
-        countQuery = """
-        select count(br)
-        from BorrowRecord br
-        where (:userId is null or br.user.id = :userId)
-          and (:bookId is null or br.book.id = :bookId)
-          and (:status is null or br.status = :status)
-          and (:fromDate is null or br.borrowDate >= :fromDate)
-          and (:toDate is null or br.borrowDate <= :toDate)
-        """)
-    Page<BorrowRecordProjection> findAllProjected(
-        @Param("userId") Long userId,
-        @Param("bookId") Long bookId,
-        @Param("status") BorrowStatus status,
-        @Param("fromDate") LocalDateTime fromDate,
-        @Param("toDate") LocalDateTime toDate,
-        Pageable pageable
-    );
+    @EntityGraph(attributePaths = {"user", "book"})
+    Optional<BorrowRecord> findWithUserAndBookById(Long id);
 
-    Optional<BorrowTokenProjection> findByDownloadToken(String downloadToken, Class<BorrowTokenProjection> type);
+    /**
+     * Trả về danh sách borrow record với projection (SELECT NEW) — flatten cross-table fields từ
+     * user (username) và book (title, fileUrl) thành một object phẳng. Thay thế Specification-based
+     * findAll cho các query read-only list/page. Các tham số null được bỏ qua (optional filter).
+     */
+    @Query(
+            value =
+                    """
+      select new fpt.training.qltv.repository.projection.BorrowRecordProjection(
+          br.id,
+          br.user.id,
+          u.username,
+          br.book.id,
+          b.title,
+          b.fileUrl,
+          br.borrowDate,
+          br.dueDate,
+          br.returnDate,
+          br.status,
+          br.downloadToken,
+          br.tokenExpiredAt
+      )
+      from BorrowRecord br
+      join br.user u
+      join br.book b
+      where (:userId is null or br.user.id = :userId)
+        and (:bookId is null or br.book.id = :bookId)
+        and (:status is null or br.status = :status)
+        and (:fromDate is null or br.borrowDate >= :fromDate)
+        and (:toDate is null or br.borrowDate <= :toDate)
+      """,
+            countQuery =
+                    """
+      select count(br)
+      from BorrowRecord br
+      where (:userId is null or br.user.id = :userId)
+        and (:bookId is null or br.book.id = :bookId)
+        and (:status is null or br.status = :status)
+        and (:fromDate is null or br.borrowDate >= :fromDate)
+        and (:toDate is null or br.borrowDate <= :toDate)
+      """)
+    Page<BorrowRecordProjection> findAllProjected(
+            @Param("userId") Long userId,
+            @Param("bookId") Long bookId,
+            @Param("status") BorrowStatus status,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable);
+
+    Optional<BorrowTokenProjection> findByDownloadToken(
+            String downloadToken, Class<BorrowTokenProjection> type);
 }

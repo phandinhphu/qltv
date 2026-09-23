@@ -4,8 +4,8 @@ import fpt.training.qltv.entity.BookStatus;
 import java.time.LocalDateTime;
 
 /**
- * Interface-based projection cho các query đọc danh sách sách.
- * Spring Data JPA tự sinh proxy tại runtime, SQL chỉ SELECT đúng các cột này.
+ * Interface-based projection cho các query đọc danh sách sách. Spring Data JPA tự sinh proxy tại
+ * runtime, SQL chỉ SELECT đúng các cột này.
  */
 public interface BookSummaryProjection {
 

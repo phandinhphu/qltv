@@ -21,18 +21,18 @@ public class ApiResponse<T> {
     }
 
     public static <T> ApiResponse<T> successWithoutData(String message) {
-		ApiResponse<T> res = new ApiResponse<>();
-		res.success = true;
-		res.message = message;
-		res.data = null;
-		return res;
-	}
+        ApiResponse<T> res = new ApiResponse<>();
+        res.success = true;
+        res.message = message;
+        res.data = null;
+        return res;
+    }
 
     public static <T> ApiResponse<T> failure(String message) {
-		ApiResponse<T> res = new ApiResponse<>();
-		res.success = false;
-		res.message = message;
-		res.data = null;
-		return res;
-	}
+        ApiResponse<T> res = new ApiResponse<>();
+        res.success = false;
+        res.message = message;
+        res.data = null;
+        return res;
+    }
 }

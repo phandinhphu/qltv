@@ -18,7 +18,8 @@ public interface BorrowService {
 
     PageResponse<BorrowRecordResponse> getMyBorrows(Long userId, int page, int size);
 
-    PageResponse<BorrowRecordResponse> getAllBorrows(BorrowFilterRequest filter, int page, int size);
+    PageResponse<BorrowRecordResponse> getAllBorrows(
+            BorrowFilterRequest filter, int page, int size);
 
     List<BorrowRecordResponse> findByUserIdAndBookId(Long userId, Long bookId);
 }

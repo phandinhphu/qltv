@@ -9,9 +9,9 @@ import fpt.training.qltv.security.JwtUtil;
 import fpt.training.qltv.service.RefreshTokenRotationResult;
 import fpt.training.qltv.service.RefreshTokenService;
 import fpt.training.qltv.service.UserService;
-import java.util.Date;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.util.Date;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -38,10 +38,11 @@ public class AuthApiController {
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
 
-    public AuthApiController(UserService userService,
-                             AuthenticationManager authenticationManager,
-                             JwtUtil jwtUtil,
-                             RefreshTokenService refreshTokenService) {
+    public AuthApiController(
+            UserService userService,
+            AuthenticationManager authenticationManager,
+            JwtUtil jwtUtil,
+            RefreshTokenService refreshTokenService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
@@ -53,19 +54,23 @@ public class AuthApiController {
             @Valid @NotNull @RequestBody RegisterRequest request) {
         UserResponse response = userService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.success(response, "Đăng ký thành công"));
+                .body(ApiResponse.success(response, "Đăng ký thành công"));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @Valid @NotNull @RequestBody LoginRequest request) {
-        Authentication auth = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        Authentication auth =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.getUsername(), request.getPassword()));
 
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        String role = userDetails.getAuthorities().stream()
-            .findFirst().map(a -> a.getAuthority()).orElse("");
+        String role =
+                userDetails.getAuthorities().stream()
+                        .findFirst()
+                        .map(a -> a.getAuthority())
+                        .orElse("");
         String accessToken = jwtUtil.generateToken(userDetails.getUsername(), role);
         String refreshToken = refreshTokenService.issueRefreshToken(userDetails.getUsername());
         Date exp = jwtUtil.extractExpiration(accessToken);
@@ -78,8 +83,8 @@ public class AuthApiController {
         res.setExpiredAt(exp.getTime());
 
         return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, buildRefreshCookie(refreshToken).toString())
-            .body(ApiResponse.success(res, "Đăng nhập thành công"));
+                .header(HttpHeaders.SET_COOKIE, buildRefreshCookie(refreshToken).toString())
+                .body(ApiResponse.success(res, "Đăng nhập thành công"));
     }
 
     @PostMapping("/refresh-token")
@@ -89,7 +94,8 @@ public class AuthApiController {
             throw new BadCredentialsException("Refresh token không hợp lệ");
         }
 
-        RefreshTokenRotationResult rotationResult = refreshTokenService.rotateRefreshToken(refreshToken);
+        RefreshTokenRotationResult rotationResult =
+                refreshTokenService.rotateRefreshToken(refreshToken);
         fpt.training.qltv.entity.User user = rotationResult.user();
         String newRefreshToken = rotationResult.refreshToken();
         String role = user.getRole() != null ? "ROLE_" + user.getRole().name() : "";
@@ -104,17 +110,17 @@ public class AuthApiController {
         res.setExpiredAt(exp.getTime());
 
         return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, buildRefreshCookie(newRefreshToken).toString())
-            .body(ApiResponse.success(res, "Làm mới access token thành công"));
+                .header(HttpHeaders.SET_COOKIE, buildRefreshCookie(newRefreshToken).toString())
+                .body(ApiResponse.success(res, "Làm mới access token thành công"));
     }
 
     private ResponseCookie buildRefreshCookie(String refreshToken) {
         return ResponseCookie.from(REFRESH_COOKIE_NAME, refreshToken)
-            .httpOnly(true)
-            .secure(false)
-            .path("/api/v1/auth")
-            .sameSite("Lax")
-            .maxAge(java.time.Duration.ofDays(30))
-            .build();
+                .httpOnly(true)
+                .secure(false)
+                .path("/api/v1/auth")
+                .sameSite("Lax")
+                .maxAge(java.time.Duration.ofDays(30))
+                .build();
     }
 }

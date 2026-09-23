@@ -3,8 +3,8 @@ package fpt.training.qltv.repository.projection;
 import java.time.LocalDateTime;
 
 /**
- * Interface-based projection cho các query đọc danh sách review.
- * Dùng nested sub-interface để Spring Data JPA tự sinh JOIN và chỉ SELECT các cột cần.
+ * Interface-based projection cho các query đọc danh sách review. Dùng nested sub-interface để
+ * Spring Data JPA tự sinh JOIN và chỉ SELECT các cột cần.
  */
 public interface ReviewSummaryProjection {
 
@@ -24,6 +24,7 @@ public interface ReviewSummaryProjection {
 
     interface UserView {
         Long getId();
+
         String getUsername();
     }
 

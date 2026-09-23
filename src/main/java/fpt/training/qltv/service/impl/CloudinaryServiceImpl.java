@@ -37,13 +37,14 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 
     private String upload(MultipartFile file, String folder, String resourceType) {
         try {
-            Map<?, ?> result = cloudinary.uploader().upload(
-                file.getBytes(),
-                ObjectUtils.asMap(
-                    "folder", folder,
-                    "resource_type", resourceType
-                )
-            );
+            Map<?, ?> result =
+                    cloudinary
+                            .uploader()
+                            .upload(
+                                    file.getBytes(),
+                                    ObjectUtils.asMap(
+                                            "folder", folder,
+                                            "resource_type", resourceType));
             Object url = result.get("secure_url");
             if (url == null) {
                 throw new FileUploadException("Không thể lấy được URL khi tải lên");
@@ -56,10 +57,9 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 
     private void delete(String publicId, String resourceType) {
         try {
-            cloudinary.uploader().destroy(
-                publicId,
-                ObjectUtils.asMap("resource_type", resourceType)
-            );
+            cloudinary
+                    .uploader()
+                    .destroy(publicId, ObjectUtils.asMap("resource_type", resourceType));
         } catch (IOException ex) {
             throw new FileUploadException("Không thể xóa file: " + ex.getMessage());
         }

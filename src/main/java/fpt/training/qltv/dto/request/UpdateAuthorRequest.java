@@ -10,5 +10,6 @@ public class UpdateAuthorRequest {
 
     @Pattern(regexp = ".*\\S.*", message = "Tên tác giả không được để trống")
     private String name;
+
     private String bio;
 }

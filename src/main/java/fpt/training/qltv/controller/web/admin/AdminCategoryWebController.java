@@ -4,9 +4,9 @@ import fpt.training.qltv.dto.request.CreateCategoryRequest;
 import fpt.training.qltv.dto.request.UpdateCategoryRequest;
 import fpt.training.qltv.dto.response.CategoryResponse;
 import fpt.training.qltv.service.CategoryService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,7 +39,9 @@ public class AdminCategoryWebController {
     }
 
     @PostMapping
-    public String create(@Valid @ModelAttribute CreateCategoryRequest request, RedirectAttributes redirectAttributes) {
+    public String create(
+            @Valid @ModelAttribute CreateCategoryRequest request,
+            RedirectAttributes redirectAttributes) {
         try {
             categoryService.create(request);
             redirectAttributes.addFlashAttribute("successMessage", "Tạo danh mục thành công");
@@ -62,9 +64,10 @@ public class AdminCategoryWebController {
     }
 
     @PostMapping("/{id}")
-    public String update(@PathVariable Long id,
-                         @Valid @ModelAttribute UpdateCategoryRequest request,
-                         RedirectAttributes redirectAttributes) {
+    public String update(
+            @PathVariable Long id,
+            @Valid @ModelAttribute UpdateCategoryRequest request,
+            RedirectAttributes redirectAttributes) {
         try {
             categoryService.update(id, request);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật danh mục thành công");
@@ -106,7 +109,8 @@ public class AdminCategoryWebController {
     public String forceDelete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             categoryService.forceDelete(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Xóa vĩnh viễn danh mục thành công");
+            redirectAttributes.addFlashAttribute(
+                    "successMessage", "Xóa vĩnh viễn danh mục thành công");
         } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }

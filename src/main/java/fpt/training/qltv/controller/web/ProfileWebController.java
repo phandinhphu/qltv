@@ -5,8 +5,8 @@ import fpt.training.qltv.dto.response.UserResponse;
 import fpt.training.qltv.exception.common.BusinessException;
 import fpt.training.qltv.security.CustomUserDetails;
 import fpt.training.qltv.service.UserService;
-import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -39,8 +39,9 @@ public class ProfileWebController {
     }
 
     @PostMapping
-    public String updateProfile(@Valid @ModelAttribute("profile") UpdateProfileRequest request,
-                                RedirectAttributes redirectAttributes) {
+    public String updateProfile(
+            @Valid @ModelAttribute("profile") UpdateProfileRequest request,
+            RedirectAttributes redirectAttributes) {
         try {
             Long userId = getCurrentUserId();
             userService.updateProfile(userId, request);
@@ -53,7 +54,8 @@ public class ProfileWebController {
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
             throw new BusinessException("Không tìm thấy thông tin người dùng đăng nhập");
         }
         return userDetails.getId();

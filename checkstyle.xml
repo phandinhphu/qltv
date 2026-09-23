@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+          "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+          "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java, properties, xml"/>
+
+    <!-- Lọc bỏ các file autogen hoặc thư mục build -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="module\-info\.java$"/>
+    </module>
+
+    <!-- Kiểm tra Tab (bắt buộc dùng space) -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <!-- Giới hạn độ dài dòng (Tối đa 120 ký tự - phù hợp với Spring Boot) -->
+    <module name="LineLength">
+        <property name="fileExtensions" value="java"/>
+        <property name="max" value="120"/>
+        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+    </module>
+
+    <module name="TreeWalker">
+        <!-- Quy tắc đặt tên Package, Class, Variable, Method -->
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+        </module>
+        <module name="TypeName"/>
+        <module name="MethodName"/>
+        <module name="MemberName"/>
+        <module name="ParameterName"/>
+        <module name="LocalVariableName"/>
+        <module name="ConstantName"/>
+
+        <!-- Quản lý Import -->
+        <module name="AvoidStarImport"/> <!-- Không dùng import * -->
+        <module name="IllegalImport"/> <!-- Chặn import không hợp lệ (như sun.*) -->
+        <module name="RedundantImport"/> <!-- Thừa import -->
+        <module name="UnusedImports"/> <!-- Import không sử dụng -->
+
+        <!-- Quy tắc ngoặc nhọn {} -->
+        <module name="LeftCurly"/>
+        <module name="RightCurly"/>
+        <module name="NeedBraces"/> <!-- Bắt buộc dùng {} cho if/else/for/while kể cả 1 dòng -->
+
+        <!-- Kiểm tra khoảng trắng -->
+        <module name="GenericWhitespace"/>
+        <module name="WhitespaceAround"/>
+        <module name="WhitespaceAfter"/>
+        <module name="NoWhitespaceBefore"/>
+
+        <!-- Khối code/Logic cơ bản -->
+        <module name="EmptyBlock"/>
+        <module name="EqualsHashCode"/> <!-- Override equals bắt buộc override hashCode -->
+        <module name="MissingSwitchDefault"/> <!-- Switch-case phải có default -->
+        <module name="MultipleVariableDeclarations"/> <!-- Không khai báo nhiều biến trên 1 dòng -->
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+
+        <!-- Kiểm tra Annotation -->
+        <module name="AnnotationLocation">
+            <property name="allowSamelineMultipleAnnotations" value="false"/>
+            <property name="allowSamelineSingleParameterlessAnnotation" value="false"/>
+            <property name="allowSamelineParameterizedAnnotation" value="false"/>
+        </module>
+        <module name="MissingOverride"/>
+
+        <!-- Khác -->
+        <module name="UpperEll"/> <!-- Dùng L thay vì l khi khai báo long (ví dụ: 100L) -->
+        <module name="ModifierOrder"/> <!-- Thứ tự public static final... -->
+    </module>
+</module>

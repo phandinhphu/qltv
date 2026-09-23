@@ -76,8 +76,13 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             throw new BusinessException("Username không được để trống");
         }
 
-        User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new BadCredentialsException("Không tìm thấy tài khoản hợp lệ"));
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(
+                                () ->
+                                        new BadCredentialsException(
+                                                "Không tìm thấy tài khoản hợp lệ"));
 
         if (!user.isActive()) {
             throw new BadCredentialsException("Tài khoản đã bị khóa");
@@ -92,8 +97,11 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         }
 
         String tokenHash = hashToken(refreshToken);
-        RefreshToken token = refreshTokenRepository.findByTokenHashAndRevokedAtIsNull(tokenHash)
-            .orElseThrow(() -> new BadCredentialsException("Refresh token không hợp lệ"));
+        RefreshToken token =
+                refreshTokenRepository
+                        .findByTokenHashAndRevokedAtIsNull(tokenHash)
+                        .orElseThrow(
+                                () -> new BadCredentialsException("Refresh token không hợp lệ"));
 
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         if (token.getExpiresAt().isBefore(now)) {

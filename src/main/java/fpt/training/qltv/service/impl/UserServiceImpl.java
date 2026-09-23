@@ -11,10 +11,9 @@ import fpt.training.qltv.exception.common.ResourceNotFoundException;
 import fpt.training.qltv.repository.UserRepository;
 import fpt.training.qltv.repository.projection.UserSummaryProjection;
 import fpt.training.qltv.service.UserService;
-import lombok.RequiredArgsConstructor;
-
 import java.time.LocalDateTime;
-
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +21,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -58,10 +56,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<UserResponse> findAll(int page, int size) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1),
-                Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.max(size, 1),
+                        Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        Page<UserResponse> result = userRepository.findAllProjectedBy(pageable).map(this::toResponse);
+        Page<UserResponse> result =
+                userRepository.findAllProjectedBy(pageable).map(this::toResponse);
         return PageResponse.of(result);
     }
 
@@ -93,21 +95,25 @@ public class UserServiceImpl implements UserService {
         User user = getUserOrThrow(userId);
         if (request.getUsername() != null) {
             String trimmedUsername = request.getUsername().trim();
-            userRepository.findByUsername(trimmedUsername)
+            userRepository
+                    .findByUsername(trimmedUsername)
                     .filter(existing -> !existing.getId().equals(user.getId()))
-                    .ifPresent(existing -> {
-                        throw new BusinessException("Username đã tồn tại");
-                    });
+                    .ifPresent(
+                            existing -> {
+                                throw new BusinessException("Username đã tồn tại");
+                            });
             user.setUsername(trimmedUsername);
         }
 
         if (request.getEmail() != null) {
             String trimmedEmail = request.getEmail().trim();
-            userRepository.findByEmail(trimmedEmail)
+            userRepository
+                    .findByEmail(trimmedEmail)
                     .filter(existing -> !existing.getId().equals(user.getId()))
-                    .ifPresent(existing -> {
-                        throw new BusinessException("Email đã tồn tại");
-                    });
+                    .ifPresent(
+                            existing -> {
+                                throw new BusinessException("Email đã tồn tại");
+                            });
             user.setEmail(trimmedEmail);
         }
 
@@ -121,7 +127,8 @@ public class UserServiceImpl implements UserService {
         if (id == null) {
             throw new BusinessException("Id user không được để trống");
         }
-        return userRepository.findById(id)
+        return userRepository
+                .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
     }
 
@@ -150,7 +157,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private void handlePasswordChange(UpdateProfileRequest request, User user) {
-        boolean hasNewPassword = !isBlank(request.getNewPassword()) || !isBlank(request.getConfirmPassword());
+        boolean hasNewPassword =
+                !isBlank(request.getNewPassword()) || !isBlank(request.getConfirmPassword());
         boolean hasCurrentPassword = !isBlank(request.getCurrentPassword());
 
         if (!hasNewPassword && !hasCurrentPassword) {

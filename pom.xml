@@ -158,6 +158,82 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- 1. Spotless: Tự động định dạng code (Sử dụng Google Java Format) -->
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<version>2.43.0</version>
+				<configuration>
+					<java>
+						<googleJavaFormat>
+							<version>1.22.0</version>
+							<style>AOSP</style> <!-- Hoặc GOOGLE -->
+						</googleJavaFormat>
+						<removeUnusedImports /> <!-- Tự động xóa import thừa -->
+					</java>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>compile</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- 2. Checkstyle: Kiểm tra quy tắc code convention -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.3.1</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>10.15.0</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<!-- Sử dụng bộ quy tắc mặc định của Google -->
+					<configLocation>checkstyle.xml</configLocation>
+					<consoleOutput>true</consoleOutput>
+					<failsOnError>true</failsOnError>
+					<failOnViolation>true</failOnViolation>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>validate</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- 3. Git Code Format Plugin: Tự động tạo Git Pre-Commit Hook (Thay thế Husky) -->
+			<plugin>
+				<groupId>com.cosium.code</groupId>
+				<artifactId>git-code-format-maven-plugin</artifactId>
+				<version>5.3</version>
+				<executions>
+					<!-- Tự động kích hoạt hook mỗi khi compile/build -->
+					<execution>
+						<id>install-formatter-hook</id>
+						<goals>
+							<goal>install-hooks</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- Gọi Spotless & Checkstyle trước khi cho phép commit -->
+					<preCommitHooks>
+						<preCommitHook>
+							<cmd>mvn spotless:apply checkstyle:check</cmd>
+						</preCommitHook>
+					</preCommitHooks>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

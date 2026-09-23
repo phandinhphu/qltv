@@ -27,9 +27,8 @@ public class UserApiController {
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> findAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PageResponse<UserResponse> pageResponse = PageResponseMapper.from(
-            userService.findAll(page, size)
-        );
+        PageResponse<UserResponse> pageResponse =
+                PageResponseMapper.from(userService.findAll(page, size));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
@@ -40,6 +39,8 @@ public class UserApiController {
 
     @PutMapping("/{id}/toggle-active")
     public ResponseEntity<ApiResponse<UserResponse>> toggleActive(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(userService.toggleActive(id), "Cập nhật trạng thái thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        userService.toggleActive(id), "Cập nhật trạng thái thành công"));
     }
 }

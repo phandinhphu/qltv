@@ -81,13 +81,16 @@ public class BorrowWebController {
         String disposition = attachment ? "attachment" : "inline";
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, disposition + "; filename=\"" + filename + "\"")
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        disposition + "; filename=\"" + filename + "\"")
                 .body(resource);
     }
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+        if (authentication == null
+                || !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
             return null;
         }
         return userDetails.getId();

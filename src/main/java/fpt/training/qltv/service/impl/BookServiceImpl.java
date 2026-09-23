@@ -69,20 +69,24 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     public PageResponse<BookResponse> findAll(BookFilterRequest filter, int page, int size) {
         BookFilterRequest safeFilter = filter == null ? new BookFilterRequest() : filter;
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1),
-                Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.max(size, 1),
+                        Sort.by(Sort.Direction.DESC, "createdAt"));
         // @SQLRestriction tự động thêm "deleted = false" — không cần tham số deleted nữa
-        Specification<Book> specification = BookSpecification.of(
-                safeFilter.getTitle(),
-                safeFilter.getCategoryId(),
-                safeFilter.getAuthorId(),
-                safeFilter.getLanguage(),
-                safeFilter.getStatus(),
-                safeFilter.getPublishYear());
+        Specification<Book> specification =
+                BookSpecification.of(
+                        safeFilter.getTitle(),
+                        safeFilter.getCategoryId(),
+                        safeFilter.getAuthorId(),
+                        safeFilter.getLanguage(),
+                        safeFilter.getStatus(),
+                        safeFilter.getPublishYear());
 
-        Page<BookSummaryProjection> result = bookRepository.findBy(specification, q -> q
-                .as(BookSummaryProjection.class)
-                .page(pageable));
+        Page<BookSummaryProjection> result =
+                bookRepository.findBy(
+                        specification, q -> q.as(BookSummaryProjection.class).page(pageable));
 
         return PageResponse.of(result.map(this::toListResponse));
     }
@@ -90,12 +94,17 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<BookResponse> findAllDeleted(int page, int size) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "updatedAt"));
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.max(size, 1),
+                        Sort.by(Sort.Direction.DESC, "updatedAt"));
         // Native query bypass @SQLRestriction để lấy trash bin
         List<Book> deletedBooks = bookRepository.findAllDeleted();
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), deletedBooks.size());
-        List<Book> pageContent = start >= deletedBooks.size() ? List.of() : deletedBooks.subList(start, end);
+        List<Book> pageContent =
+                start >= deletedBooks.size() ? List.of() : deletedBooks.subList(start, end);
         Page<Book> result = new PageImpl<>(pageContent, pageable, deletedBooks.size());
         return PageResponse.of(result.map(this::toSummaryResponse));
     }
@@ -104,8 +113,17 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     @Cacheable(value = "books", key = "#id")
     public BookDetailResponse findById(Long id) {
-        // findById đã bị @SQLRestriction filter — nếu đã xóa sẽ trả về empty → 404
-        return toDetailResponse(getBookOrThrow(id));
+        if (id == null) {
+            throw new BusinessException("Id sách không được để trống");
+        }
+        // findWithDetailById dùng @EntityGraph(categories, authors, borrowRecords)
+        // → 1 query thay vì 4 (1 findById + 3 lazy cho mỗi collection)
+        // @SQLRestriction tự lọc deleted=false; nếu đã xóa → empty → 404
+        Book book =
+                bookRepository
+                        .findWithDetailById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Book", id));
+        return toDetailResponse(book);
     }
 
     @Override
@@ -119,8 +137,15 @@ public class BookServiceImpl implements BookService {
         }
 
         Book book = new Book();
-        applyScalarFields(book, request.getTitle(), request.getIsbn(), request.getDescription(),
-                request.getPublishYear(), request.getLanguage(), request.getTotalCopies(), request.getStatus());
+        applyScalarFields(
+                book,
+                request.getTitle(),
+                request.getIsbn(),
+                request.getDescription(),
+                request.getPublishYear(),
+                request.getLanguage(),
+                request.getTotalCopies(),
+                request.getStatus());
         book.setCoverImageUrl(uploadCover(cover));
         book.setFileUrl(privateFileService.saveBookFile(file));
         applyAssociations(book, request.getCategoryIds(), request.getAuthorIds());
@@ -131,11 +156,13 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(evict = {
-        @CacheEvict(value = "books", key = "#id"),
-        @CacheEvict(value = "dashboard", allEntries = true)
-    })
-    public BookResponse update(Long id, UpdateBookRequest request, MultipartFile cover, MultipartFile file) {
+    @Caching(
+            evict = {
+                @CacheEvict(value = "books", key = "#id"),
+                @CacheEvict(value = "dashboard", allEntries = true)
+            })
+    public BookResponse update(
+            Long id, UpdateBookRequest request, MultipartFile cover, MultipartFile file) {
         Book book = getBookOrThrow(id);
 
         if (request.getIsbn() != null && !request.getIsbn().equals(book.getIsbn())) {
@@ -184,16 +211,17 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(evict = {
-        @CacheEvict(value = "books", key = "#id"),
-        @CacheEvict(value = "dashboard", allEntries = true)
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = "books", key = "#id"),
+                @CacheEvict(value = "dashboard", allEntries = true)
+            })
     public void delete(Long id) {
         Book book = getBookOrThrow(id);
 
-        boolean hasActiveBorrows = borrowRecordRepository.existsByBookIdAndStatusIn(
-                id,
-                List.of(BorrowStatus.BORROWING, BorrowStatus.OVERDUE));
+        boolean hasActiveBorrows =
+                borrowRecordRepository.existsByBookIdAndStatusIn(
+                        id, List.of(BorrowStatus.BORROWING, BorrowStatus.OVERDUE));
         if (hasActiveBorrows) {
             throw new BusinessException("Không thể xóa sách đang được mượn chưa trả");
         }
@@ -206,33 +234,37 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(evict = {
-        @CacheEvict(value = "books", key = "#id"),
-        @CacheEvict(value = "dashboard", allEntries = true)
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = "books", key = "#id"),
+                @CacheEvict(value = "dashboard", allEntries = true)
+            })
     public void restore(Long id) {
         // Cần bypass @SQLRestriction để tìm bản ghi đã xóa
         Book book = getDeletedBookOrThrow(id);
 
         if (bookRepository.existsByIsbn(book.getIsbn())) {
-            throw new BusinessException("Không thể khôi phục vì ISBN của sách này đã tồn tại trên một cuốn sách khác");
+            throw new BusinessException(
+                    "Không thể khôi phục vì ISBN của sách này đã tồn tại trên một cuốn sách khác");
         }
 
         // @SQLRestriction tự lọc: findAllById chỉ trả về category/author còn active.
         // Nếu category/author bị xóa → không resolve được id → ensureAllIdsResolved báo lỗi.
         List<Long> categoryIds = book.getCategories().stream().map(Category::getId).toList();
-        List<Long> authorIds   = book.getAuthors().stream().map(Author::getId).toList();
+        List<Long> authorIds = book.getAuthors().stream().map(Author::getId).toList();
 
         if (!categoryIds.isEmpty()) {
             List<Category> activeCategories = categoryRepository.findAllById(categoryIds);
             if (activeCategories.size() < categoryIds.size()) {
-                throw new BusinessException("Không thể khôi phục sách vì một hoặc nhiều thể loại liên kết đã bị xóa tạm thời.");
+                throw new BusinessException(
+                        "Không thể khôi phục sách vì một hoặc nhiều thể loại liên kết đã bị xóa tạm thời.");
             }
         }
         if (!authorIds.isEmpty()) {
             List<Author> activeAuthors = authorRepository.findAllById(authorIds);
             if (activeAuthors.size() < authorIds.size()) {
-                throw new BusinessException("Không thể khôi phục sách vì một hoặc nhiều tác giả liên kết đã bị xóa tạm thời.");
+                throw new BusinessException(
+                        "Không thể khôi phục sách vì một hoặc nhiều tác giả liên kết đã bị xóa tạm thời.");
             }
         }
 
@@ -244,10 +276,11 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Caching(evict = {
-        @CacheEvict(value = "books", key = "#id"),
-        @CacheEvict(value = "dashboard", allEntries = true)
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = "books", key = "#id"),
+                @CacheEvict(value = "dashboard", allEntries = true)
+            })
     public void forceDelete(Long id) {
         Book book = getDeletedBookOrThrow(id);
 
@@ -273,7 +306,8 @@ public class BookServiceImpl implements BookService {
         if (id == null) {
             throw new BusinessException("Id sách không được để trống");
         }
-        return bookRepository.findById(id)
+        return bookRepository
+                .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book", id));
     }
 
@@ -283,17 +317,29 @@ public class BookServiceImpl implements BookService {
         if (id == null) {
             throw new BusinessException("Id sách không được để trống");
         }
-        return bookRepository.findByIdDeleted(id)
-                .orElseThrow(() -> new BusinessException("Sách đã xóa không tồn tại hoặc chưa được xóa mềm"));
+        return bookRepository
+                .findByIdDeleted(id)
+                .orElseThrow(
+                        () ->
+                                new BusinessException(
+                                        "Sách đã xóa không tồn tại hoặc chưa được xóa mềm"));
     }
 
-    private void validateCreateRequest(CreateBookRequest request, MultipartFile cover, MultipartFile file) {
+    private void validateCreateRequest(
+            CreateBookRequest request, MultipartFile cover, MultipartFile file) {
         validateImage(cover);
         validateBookFile(file);
     }
 
-    private void applyScalarFields(Book book, String title, String isbn, String description, Integer publishYear,
-            String language, Integer totalCopies, BookStatus requestedStatus) {
+    private void applyScalarFields(
+            Book book,
+            String title,
+            String isbn,
+            String description,
+            Integer publishYear,
+            String language,
+            Integer totalCopies,
+            BookStatus requestedStatus) {
         book.setTitle(title);
         book.setIsbn(isbn);
         book.setDescription(description);
@@ -322,9 +368,12 @@ public class BookServiceImpl implements BookService {
             return;
         }
         // @SQLRestriction đảm bảo findAllById chỉ trả về category còn active.
-        // Nếu id của category đã xóa được truyền vào → không resolve được → ensureAllIdsResolved báo lỗi rõ ràng.
+        // Nếu id của category đã xóa được truyền vào → không resolve được → ensureAllIdsResolved
+        // báo lỗi rõ ràng.
         List<Category> categories = categoryRepository.findAllById(categoryIds);
-        ensureAllIdsResolved(categoryIds, categories.stream().map(Category::getId).collect(Collectors.toSet()),
+        ensureAllIdsResolved(
+                categoryIds,
+                categories.stream().map(Category::getId).collect(Collectors.toSet()),
                 "Category");
         book.setCategories(new HashSet<>(categories));
     }
@@ -339,11 +388,15 @@ public class BookServiceImpl implements BookService {
         }
         // Tương tự applyCategories — @SQLRestriction lo phần filter active
         List<Author> authors = authorRepository.findAllById(authorIds);
-        ensureAllIdsResolved(authorIds, authors.stream().map(Author::getId).collect(Collectors.toSet()), "Author");
+        ensureAllIdsResolved(
+                authorIds,
+                authors.stream().map(Author::getId).collect(Collectors.toSet()),
+                "Author");
         book.setAuthors(new HashSet<>(authors));
     }
 
-    private void ensureAllIdsResolved(List<Long> requestedIds, Set<Long> resolvedIds, String entityName) {
+    private void ensureAllIdsResolved(
+            List<Long> requestedIds, Set<Long> resolvedIds, String entityName) {
         for (Long requestedId : requestedIds) {
             if (!resolvedIds.contains(requestedId)) {
                 throw new ResourceNotFoundException(entityName, requestedId);
@@ -368,7 +421,8 @@ public class BookServiceImpl implements BookService {
             return;
         }
 
-        book.setStatus(book.getAvailableCopies() > 0 ? BookStatus.AVAILABLE : BookStatus.OUT_OF_STOCK);
+        book.setStatus(
+                book.getAvailableCopies() > 0 ? BookStatus.AVAILABLE : BookStatus.OUT_OF_STOCK);
     }
 
     private BookResponse toListResponse(BookSummaryProjection projection) {
@@ -395,14 +449,9 @@ public class BookServiceImpl implements BookService {
     private BookResponse toSummaryResponse(Book book) {
         BookResponse response = new BookResponse();
         copyCommonFields(book, response);
-        response.setCategoryNames(book.getCategories().stream()
-                .map(Category::getName)
-                .sorted()
-                .toList());
-        response.setAuthorNames(book.getAuthors().stream()
-                .map(Author::getName)
-                .sorted()
-                .toList());
+        response.setCategoryNames(
+                book.getCategories().stream().map(Category::getName).sorted().toList());
+        response.setAuthorNames(book.getAuthors().stream().map(Author::getName).sorted().toList());
         response.setAvgRating(calculateAverageRating(book));
         return response;
     }
@@ -410,24 +459,23 @@ public class BookServiceImpl implements BookService {
     private BookDetailResponse toDetailResponse(Book book) {
         BookDetailResponse response = new BookDetailResponse();
         copyCommonFields(book, response);
-        response.setCategoryNames(book.getCategories().stream().map(Category::getName).sorted().toList());
+        response.setCategoryNames(
+                book.getCategories().stream().map(Category::getName).sorted().toList());
         response.setAuthorNames(book.getAuthors().stream().map(Author::getName).sorted().toList());
-        response.setCategoryIds(book.getCategories().stream()
-                .map(Category::getId)
-                .sorted()
-                .toList());
-        response.setAuthorIds(book.getAuthors().stream()
-                .map(Author::getId)
-                .sorted()
-                .toList());
+        response.setCategoryIds(
+                book.getCategories().stream().map(Category::getId).sorted().toList());
+        response.setAuthorIds(book.getAuthors().stream().map(Author::getId).sorted().toList());
         response.setAvgRating(calculateAverageRating(book));
         response.setBorrowCount((long) book.getBorrowRecords().size());
-        response.setReviews(reviewRepository.findProjectedByBookIdAndVisibleTrue(book.getId()).stream()
-                .map(this::toReviewResponse)
-                .sorted(Comparator
-                        .comparing(ReviewResponse::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .reversed())
-                .toList());
+        response.setReviews(
+                reviewRepository.findProjectedByBookIdAndVisibleTrue(book.getId()).stream()
+                        .map(this::toReviewResponse)
+                        .sorted(
+                                Comparator.comparing(
+                                                ReviewResponse::getCreatedAt,
+                                                Comparator.nullsLast(Comparator.naturalOrder()))
+                                        .reversed())
+                        .toList());
         return response;
     }
 
@@ -448,18 +496,16 @@ public class BookServiceImpl implements BookService {
     }
 
     private Double calculateAverageRating(Book book) {
-        List<Review> visibleReviews = book.getReviews() == null
-                ? List.of()
-                : book.getReviews().stream().filter(Review::isVisible).toList();
+        List<Review> visibleReviews =
+                book.getReviews() == null
+                        ? List.of()
+                        : book.getReviews().stream().filter(Review::isVisible).toList();
 
         if (visibleReviews.isEmpty()) {
             return 0.0;
         }
 
-        return visibleReviews.stream()
-                .mapToInt(Review::getRating)
-                .average()
-                .orElse(0.0);
+        return visibleReviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
     }
 
     private ReviewResponse toReviewResponse(ReviewSummaryProjection projection) {
@@ -523,7 +569,9 @@ public class BookServiceImpl implements BookService {
             if (trimmed.startsWith("/")) {
                 trimmed = trimmed.substring(1);
             }
-            if (trimmed.startsWith("v") && trimmed.length() > 1 && Character.isDigit(trimmed.charAt(1))) {
+            if (trimmed.startsWith("v")
+                    && trimmed.length() > 1
+                    && Character.isDigit(trimmed.charAt(1))) {
                 int slashIndex = trimmed.indexOf('/');
                 if (slashIndex > 0) {
                     trimmed = trimmed.substring(slashIndex + 1);

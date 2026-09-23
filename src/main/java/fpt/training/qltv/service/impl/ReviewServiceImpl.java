@@ -15,10 +15,10 @@ import fpt.training.qltv.repository.ReviewRepository;
 import fpt.training.qltv.repository.UserRepository;
 import fpt.training.qltv.repository.projection.ReviewSummaryProjection;
 import fpt.training.qltv.service.ReviewService;
-import lombok.RequiredArgsConstructor;
-
 import java.time.LocalDateTime;
-
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,8 +26,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.CacheManager;
 
 @Service
 @RequiredArgsConstructor
@@ -50,8 +48,10 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BusinessException("Bạn phải mượn sách trước khi đánh giá");
         }
 
-        Review review = reviewRepository.findByUserIdAndBookId(userId, request.getBookId())
-            .orElseGet(Review::new);
+        Review review =
+                reviewRepository
+                        .findByUserIdAndBookId(userId, request.getBookId())
+                        .orElseGet(Review::new);
 
         review.setUser(user);
         review.setBook(book);
@@ -70,9 +70,10 @@ public class ReviewServiceImpl implements ReviewService {
         if (userId == null || bookId == null) {
             return null;
         }
-        return reviewRepository.findByUserIdAndBookId(userId, bookId)
-            .map(this::toResponse)
-            .orElse(null);
+        return reviewRepository
+                .findByUserIdAndBookId(userId, bookId)
+                .map(this::toResponse)
+                .orElse(null);
     }
 
     @Override
@@ -81,17 +82,21 @@ public class ReviewServiceImpl implements ReviewService {
         if (bookId == null) {
             throw new BusinessException("Id sách không được để trống");
         }
-        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, "createdAt"));
-        Specification<Review> specification = (root, query, cb) -> {
-            query.distinct(true);
-            return cb.and(
-                cb.equal(root.get("book").get("id"), bookId),
-                cb.isTrue(root.get("visible"))
-            );
-        };
+        Pageable pageable =
+                PageRequest.of(
+                        Math.max(page, 0),
+                        Math.max(size, 1),
+                        Sort.by(Sort.Direction.DESC, "createdAt"));
+        Specification<Review> specification =
+                (root, query, cb) -> {
+                    query.distinct(true);
+                    return cb.and(
+                            cb.equal(root.get("book").get("id"), bookId),
+                            cb.isTrue(root.get("visible")));
+                };
         // Dùng projection — Spring Data JPA tự JOIN user và book, chỉ SELECT cột cần.
-        Page<ReviewResponse> result = reviewRepository.findBy(specification, pageable)
-            .map(this::toResponse);
+        Page<ReviewResponse> result =
+                reviewRepository.findBy(specification, pageable).map(this::toResponse);
         return PageResponse.of(result);
     }
 
@@ -122,21 +127,24 @@ public class ReviewServiceImpl implements ReviewService {
         if (id == null) {
             throw new BusinessException("Id user không được để trống");
         }
-        return userRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        return userRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
     }
 
     private Book getBookOrThrow(Long id) {
-        return bookRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Book", id));
+        return bookRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book", id));
     }
 
     private Review getReviewOrThrow(Long id) {
         if (id == null) {
             throw new BusinessException("Id review không được để trống");
         }
-        return reviewRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Review", id));
+        return reviewRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Review", id));
     }
 
     private ReviewResponse toResponse(Review review) {

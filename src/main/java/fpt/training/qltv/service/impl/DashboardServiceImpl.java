@@ -1,7 +1,7 @@
 package fpt.training.qltv.service.impl;
 
-import fpt.training.qltv.dto.response.DashboardResponse;
 import fpt.training.qltv.dto.response.BookResponse;
+import fpt.training.qltv.dto.response.DashboardResponse;
 import fpt.training.qltv.entity.Book;
 import fpt.training.qltv.entity.BorrowStatus;
 import fpt.training.qltv.entity.Role;
@@ -14,11 +14,12 @@ import java.time.YearMonth;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.Cacheable;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,8 @@ public class DashboardServiceImpl implements DashboardService {
         DashboardResponse response = new DashboardResponse();
         response.setTotalBooks(bookRepository.count());
         response.setTotalUsers(userRepository.countByRole(Role.USER));
-        response.setTotalActiveBorrows(borrowRecordRepository.countByStatus(BorrowStatus.BORROWING));
+        response.setTotalActiveBorrows(
+                borrowRecordRepository.countByStatus(BorrowStatus.BORROWING));
         response.setTotalOverdue(borrowRecordRepository.countByStatus(BorrowStatus.OVERDUE));
         response.setTopBorrowedBooks(getTopBorrowedBooks());
         response.setBorrowCountByMonth(getBorrowCountByMonth());
@@ -43,8 +45,19 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     private List<BookResponse> getTopBorrowedBooks() {
-        return borrowRecordRepository.findTopBorrowedBooks(PageRequest.of(0, 5)).stream()
-                .map(this::toBookResponse)
+        // Bước 1: aggregate query nhẹ — chỉ lấy IDs, tránh conflict JOIN FETCH + pagination
+        List<Long> topIds = borrowRecordRepository.findTopBorrowedBookIds(PageRequest.of(0, 5));
+        if (topIds.isEmpty()) {
+            return List.of();
+        }
+        // Bước 2: load Book đầy đủ (categories + authors + reviews) trong 1 query @EntityGraph
+        // Giữ thứ tự theo topIds (borrow count desc)
+        Map<Long, Book> bookById =
+                bookRepository.findAllByIdIn(topIds).stream()
+                        .collect(Collectors.toMap(Book::getId, b -> b));
+        return topIds.stream()
+                .filter(bookById::containsKey)
+                .map(id -> toBookResponse(bookById.get(id)))
                 .toList();
     }
 
@@ -78,11 +91,18 @@ public class DashboardServiceImpl implements DashboardService {
         response.setTotalCopies(book.getTotalCopies());
         response.setAvailableCopies(book.getAvailableCopies());
         response.setStatus(book.getStatus());
-        response.setCategoryNames(book.getCategories().stream().map(category -> category.getName()).toList());
-        response.setAuthorNames(book.getAuthors().stream().map(author -> author.getName()).toList());
-        response.setAvgRating(book.getReviews().isEmpty() ? 0.0
-                : book.getReviews().stream().filter(review -> review.isVisible()).mapToInt(review -> review.getRating())
-                        .average().orElse(0.0));
+        response.setCategoryNames(
+                book.getCategories().stream().map(category -> category.getName()).toList());
+        response.setAuthorNames(
+                book.getAuthors().stream().map(author -> author.getName()).toList());
+        response.setAvgRating(
+                book.getReviews().isEmpty()
+                        ? 0.0
+                        : book.getReviews().stream()
+                                .filter(review -> review.isVisible())
+                                .mapToInt(review -> review.getRating())
+                                .average()
+                                .orElse(0.0));
         response.setCreatedAt(book.getCreatedAt());
         response.setUpdatedAt(book.getUpdatedAt());
         return response;

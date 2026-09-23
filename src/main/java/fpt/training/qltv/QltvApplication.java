@@ -8,8 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class QltvApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(QltvApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(QltvApplication.class, args);
+    }
 }

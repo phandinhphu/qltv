@@ -18,7 +18,8 @@ public interface BookService {
 
     BookResponse create(CreateBookRequest request, MultipartFile cover, MultipartFile file);
 
-    BookResponse update(Long id, UpdateBookRequest request, MultipartFile cover, MultipartFile file);
+    BookResponse update(
+            Long id, UpdateBookRequest request, MultipartFile cover, MultipartFile file);
 
     void delete(Long id);
 

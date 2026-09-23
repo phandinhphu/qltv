@@ -19,13 +19,13 @@ public class PageResponse<T> {
 
     public static <T> PageResponse<T> of(Page<T> page) {
         return PageResponse.<T>builder()
-            .content(page.getContent())
-            .currentPage(page.getNumber())
-            .totalPages(page.getTotalPages())
-            .totalElements(page.getTotalElements())
-            .pageSize(page.getSize())
-            .hasNext(page.hasNext())
-            .hasPrevious(page.hasPrevious())
-            .build();
+                .content(page.getContent())
+                .currentPage(page.getNumber())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements())
+                .pageSize(page.getSize())
+                .hasNext(page.hasNext())
+                .hasPrevious(page.hasPrevious())
+                .build();
     }
 }

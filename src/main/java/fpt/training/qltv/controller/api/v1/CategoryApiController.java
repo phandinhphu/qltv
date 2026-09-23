@@ -6,6 +6,7 @@ import fpt.training.qltv.dto.response.ApiResponse;
 import fpt.training.qltv.dto.response.CategoryResponse;
 import fpt.training.qltv.service.CategoryService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -35,7 +35,8 @@ public class CategoryApiController {
     @GetMapping("/trash")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> findAllDeleted() {
-        return ResponseEntity.ok(ApiResponse.success(categoryService.findAllDeleted(), "Thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.success(categoryService.findAllDeleted(), "Thành công"));
     }
 
     @GetMapping("/{id}")
@@ -48,15 +49,18 @@ public class CategoryApiController {
     public ResponseEntity<ApiResponse<CategoryResponse>> create(
             @Valid @RequestBody CreateCategoryRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(categoryService.create(request), "Tạo thể loại thành công"));
+                .body(
+                        ApiResponse.success(
+                                categoryService.create(request), "Tạo thể loại thành công"));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<CategoryResponse>> update(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateCategoryRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(categoryService.update(id, request), "Cập nhật thể loại thành công"));
+            @PathVariable Long id, @Valid @RequestBody UpdateCategoryRequest request) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        categoryService.update(id, request), "Cập nhật thể loại thành công"));
     }
 
     @DeleteMapping("/{id}")
@@ -77,6 +81,7 @@ public class CategoryApiController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> forceDelete(@PathVariable Long id) {
         categoryService.forceDelete(id);
-        return ResponseEntity.ok(ApiResponse.successWithoutData("Xóa vĩnh viễn thể loại thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.successWithoutData("Xóa vĩnh viễn thể loại thành công"));
     }
 }

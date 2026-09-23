@@ -22,9 +22,10 @@ public class AdminBorrowWebController {
     private final BorrowService borrowService;
 
     @GetMapping
-    public String index(@ModelAttribute BorrowFilterRequest filter,
-                        @RequestParam(defaultValue = "0") int page,
-                        Model model) {
+    public String index(
+            @ModelAttribute BorrowFilterRequest filter,
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
         PageResponse<BorrowRecordResponse> pageData = borrowService.getAllBorrows(filter, page, 10);
         model.addAttribute("pageData", pageData);
         model.addAttribute("filter", filter);

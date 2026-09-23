@@ -1,8 +1,8 @@
 package fpt.training.qltv.controller.api.v1;
 
+import fpt.training.qltv.dto.paginate.PageResponse;
 import fpt.training.qltv.dto.request.BorrowFilterRequest;
 import fpt.training.qltv.dto.request.BorrowRequest;
-import fpt.training.qltv.dto.paginate.PageResponse;
 import fpt.training.qltv.dto.response.ApiResponse;
 import fpt.training.qltv.dto.response.BorrowRecordResponse;
 import fpt.training.qltv.mapper.PageResponseMapper;
@@ -43,14 +43,18 @@ public class BorrowApiController {
         Long userId = getCurrentUserId();
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(borrowService.borrow(request.getBookId(), userId), "Mượn sách thành công"));
+                .body(
+                        ApiResponse.success(
+                                borrowService.borrow(request.getBookId(), userId),
+                                "Mượn sách thành công"));
     }
 
     @PutMapping("/{id}/return")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ApiResponse<BorrowRecordResponse>> returnBook(@PathVariable Long id) {
         Long userId = getCurrentUserId();
-        return ResponseEntity.ok(ApiResponse.success(borrowService.returnBook(id, userId), "Trả sách thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.success(borrowService.returnBook(id, userId), "Trả sách thành công"));
     }
 
     @GetMapping("/my")
@@ -59,9 +63,8 @@ public class BorrowApiController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Long userId = getCurrentUserId();
-        PageResponse<BorrowRecordResponse> pageResponse = PageResponseMapper.from(
-            borrowService.getMyBorrows(userId, page, size)
-        );
+        PageResponse<BorrowRecordResponse> pageResponse =
+                PageResponseMapper.from(borrowService.getMyBorrows(userId, page, size));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
@@ -72,9 +75,11 @@ public class BorrowApiController {
         Resource resource = borrowService.downloadFile(token, userId);
         String filename = resource.getFilename() == null ? "book.pdf" : resource.getFilename();
         return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_PDF)
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-            .body(resource);
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + filename + "\"")
+                .body(resource);
     }
 
     @GetMapping
@@ -83,18 +88,16 @@ public class BorrowApiController {
             @ModelAttribute BorrowFilterRequest filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PageResponse<BorrowRecordResponse> pageResponse = PageResponseMapper.from(
-            borrowService.getAllBorrows(filter, page, size)
-        );
+        PageResponse<BorrowRecordResponse> pageResponse =
+                PageResponseMapper.from(borrowService.getAllBorrows(filter, page, size));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
-    /**
-     * Helper method lấy userId từ SecurityContext
-     */
+    /** Helper method lấy userId từ SecurityContext */
     private Long getCurrentUserId() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
-                .getContext().getAuthentication().getPrincipal();
+        CustomUserDetails userDetails =
+                (CustomUserDetails)
+                        SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (userDetails == null) {
             throw new RuntimeException("User not authenticated");

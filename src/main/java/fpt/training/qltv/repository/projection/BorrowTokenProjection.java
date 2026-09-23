@@ -4,8 +4,8 @@ import fpt.training.qltv.entity.BorrowStatus;
 import java.time.LocalDateTime;
 
 /**
- * Interface-based projection dùng cho {@code findByDownloadToken} — chỉ đọc các field
- * cần thiết để validate token và lấy đường dẫn file (read-only, không mutate state).
+ * Interface-based projection dùng cho {@code findByDownloadToken} — chỉ đọc các field cần thiết để
+ * validate token và lấy đường dẫn file (read-only, không mutate state).
  */
 public interface BorrowTokenProjection {
 

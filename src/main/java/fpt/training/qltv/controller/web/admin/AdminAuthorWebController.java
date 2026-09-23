@@ -6,10 +6,10 @@ import fpt.training.qltv.dto.request.UpdateAuthorRequest;
 import fpt.training.qltv.dto.response.AuthorResponse;
 import fpt.training.qltv.dto.response.PageResponse;
 import fpt.training.qltv.service.AuthorService;
+import jakarta.validation.Valid;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,9 +29,10 @@ public class AdminAuthorWebController {
     private final AuthorService authorService;
 
     @GetMapping
-    public String index(@ModelAttribute AuthorFilterRequest filter,
-                        @RequestParam(defaultValue = "0") int page,
-                        Model model) {
+    public String index(
+            @ModelAttribute AuthorFilterRequest filter,
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
         PageResponse<AuthorResponse> pageData = authorService.findAll(filter, page, 10);
         model.addAttribute("pageData", pageData);
         model.addAttribute("filter", filter);
@@ -48,9 +49,10 @@ public class AdminAuthorWebController {
     }
 
     @PostMapping
-    public String create(@Valid @ModelAttribute CreateAuthorRequest request,
-                         @RequestParam(required = false) MultipartFile avatar,
-                         RedirectAttributes redirectAttributes) {
+    public String create(
+            @Valid @ModelAttribute CreateAuthorRequest request,
+            @RequestParam(required = false) MultipartFile avatar,
+            RedirectAttributes redirectAttributes) {
         try {
             authorService.create(request, avatar);
             redirectAttributes.addFlashAttribute("successMessage", "Tạo tác giả thành công");
@@ -73,10 +75,11 @@ public class AdminAuthorWebController {
     }
 
     @PostMapping("/{id}")
-    public String update(@PathVariable Long id,
-                         @Valid @ModelAttribute UpdateAuthorRequest request,
-                         @RequestParam(required = false) MultipartFile avatar,
-                         RedirectAttributes redirectAttributes) {
+    public String update(
+            @PathVariable Long id,
+            @Valid @ModelAttribute UpdateAuthorRequest request,
+            @RequestParam(required = false) MultipartFile avatar,
+            RedirectAttributes redirectAttributes) {
         try {
             authorService.update(id, request, avatar);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật tác giả thành công");
@@ -119,7 +122,8 @@ public class AdminAuthorWebController {
     public String forceDelete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             authorService.forceDelete(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Xóa vĩnh viễn tác giả thành công");
+            redirectAttributes.addFlashAttribute(
+                    "successMessage", "Xóa vĩnh viễn tác giả thành công");
         } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }

@@ -20,6 +20,7 @@ public class DashboardApiController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard() {
-        return ResponseEntity.ok(ApiResponse.success(dashboardService.getDashboard(), "Thành công"));
+        return ResponseEntity.ok(
+                ApiResponse.success(dashboardService.getDashboard(), "Thành công"));
     }
 }

@@ -1,7 +1,7 @@
 package fpt.training.qltv.controller.api.v1;
 
-import fpt.training.qltv.dto.request.CreateReviewRequest;
 import fpt.training.qltv.dto.paginate.PageResponse;
+import fpt.training.qltv.dto.request.CreateReviewRequest;
 import fpt.training.qltv.dto.response.ApiResponse;
 import fpt.training.qltv.dto.response.ReviewResponse;
 import fpt.training.qltv.mapper.PageResponseMapper;
@@ -35,7 +35,10 @@ public class ReviewApiController {
             @Valid @RequestBody CreateReviewRequest request) {
         Long userId = getCurrentUserId();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(reviewService.createReview(request, userId), "Tạo đánh giá thành công"));
+                .body(
+                        ApiResponse.success(
+                                reviewService.createReview(request, userId),
+                                "Tạo đánh giá thành công"));
     }
 
     @GetMapping("/book/{bookId}")
@@ -43,9 +46,8 @@ public class ReviewApiController {
             @PathVariable Long bookId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        PageResponse<ReviewResponse> pageResponse = PageResponseMapper.from(
-            reviewService.getByBook(bookId, page, size)
-        );
+        PageResponse<ReviewResponse> pageResponse =
+                PageResponseMapper.from(reviewService.getByBook(bookId, page, size));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Thành công"));
     }
 
@@ -57,12 +59,11 @@ public class ReviewApiController {
         return ResponseEntity.ok(ApiResponse.successWithoutData("Xóa đánh giá thành công"));
     }
 
-    /**
-     * Helper method lấy userId từ SecurityContext
-     */
+    /** Helper method lấy userId từ SecurityContext */
     private Long getCurrentUserId() {
-        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder
-                .getContext().getAuthentication().getPrincipal();
+        CustomUserDetails userDetails =
+                (CustomUserDetails)
+                        SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userDetails.getId();
     }
 }

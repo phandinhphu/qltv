@@ -10,5 +10,6 @@ public class UpdateCategoryRequest {
 
     @Pattern(regexp = ".*\\S.*", message = "Tên danh mục không được để trống")
     private String name;
+
     private String description;
 }

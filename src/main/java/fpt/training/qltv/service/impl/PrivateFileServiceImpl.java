@@ -51,7 +51,8 @@ public class PrivateFileServiceImpl implements PrivateFileService {
             throw new FileUploadException("File sách không được để trống");
         }
 
-        String originalName = file.getOriginalFilename() == null ? "book.pdf" : file.getOriginalFilename();
+        String originalName =
+                file.getOriginalFilename() == null ? "book.pdf" : file.getOriginalFilename();
         String safeName = sanitizeFileName(originalName);
         if (!safeName.toLowerCase(Locale.ROOT).endsWith(".pdf")) {
             safeName = safeName + ".pdf";
